@@ -237,7 +237,7 @@ class _PatientJourneyStepper extends ConsumerWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.02),
         border: const Border(
@@ -247,14 +247,15 @@ class _PatientJourneyStepper extends ConsumerWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            crumb(0, '1. Context Preview', PatientStep.contextPreview),
+            crumb(0, '1. Context', PatientStep.contextPreview),
             divider(),
-            crumb(1, '2. Hidden Scene', PatientStep.hiddenScene),
+            crumb(1, '2. Scene', PatientStep.hiddenScene),
             divider(),
-            crumb(2, '3. Daily Summary', PatientStep.dailySummary),
+            crumb(2, '3. Summary', PatientStep.dailySummary),
             divider(),
-            crumb(3, '4. 14-Day Patterns', PatientStep.patterns),
+            crumb(3, '4. Patterns', PatientStep.patterns),
           ],
         ),
       ),

@@ -22,11 +22,16 @@ class TherapistPortalScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Top Portal Header
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.start,
+            spacing: 12,
+            runSpacing: 12,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -58,17 +63,17 @@ class TherapistPortalScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Patient Clinical Insights & Behavioral Trends',
-                    style:
-                        Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                            ),
+                    'Patient Clinical Insights',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                          fontSize: 20,
+                        ),
                   ),
                 ],
               ),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.04),
                   borderRadius: BorderRadius.circular(12),
@@ -76,16 +81,17 @@ class TherapistPortalScreen extends ConsumerWidget {
                       color: Colors.white.withValues(alpha: 0.08)),
                 ),
                 child: const Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     CircleAvatar(
-                      radius: 16,
+                      radius: 14,
                       backgroundColor: AppColors.primary,
-                      child:
-                          Icon(Icons.person, size: 16, color: Colors.black),
+                      child: Icon(Icons.person, size: 14, color: Colors.black),
                     ),
-                    SizedBox(width: 10),
+                    SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           'Alex Morgan',
@@ -95,10 +101,8 @@ class TherapistPortalScreen extends ConsumerWidget {
                               color: Colors.white),
                         ),
                         Text(
-                          'ID: #P-4089 • Active Case',
-                          style: TextStyle(
-                              fontSize: 10,
-                              color: AppColors.textSecondary),
+                          '#P-4089 • Active',
+                          style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
                         ),
                       ],
                     ),
@@ -114,24 +118,27 @@ class TherapistPortalScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 6,
                   children: [
-                    Row(
+                    const Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.insights,
                             color: AppColors.primary, size: 18),
                         SizedBox(width: 8),
-                        Text(
-                          'Self-Reported Meaning vs. Telemetry Baseline',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
+                        Flexible(
+                          child: Text(
+                            'Self-Reported vs. Telemetry',
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
                         ),
                       ],
                     ),
-                    Text(
+                    const Text(
                       '14-Day Dataset',
                       style: TextStyle(
                           fontSize: 11,
@@ -235,20 +242,21 @@ class TherapistPortalScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
                     const Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.description_outlined,
                             color: AppColors.lavender, size: 18),
                         SizedBox(width: 8),
                         Text(
-                          'EHR Session Preparation Note',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
+                          'EHR Session Note',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ],
                     ),
@@ -307,9 +315,12 @@ class TherapistPortalScreen extends ConsumerWidget {
 
   Widget _buildPrivacyCheckItem(String label, String status) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.only(bottom: 10.0),
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 8,
+        runSpacing: 4,
         children: [
           Text(label,
               style: const TextStyle(
