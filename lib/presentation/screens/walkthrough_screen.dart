@@ -1,15 +1,21 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class WalkthroughScreen extends StatefulWidget {
-  final VoidCallback onComplete;
-  const WalkthroughScreen({super.key, required this.onComplete});
+import '../controllers/app_navigation_controller.dart';
+
+/// 4-page animated intro shown once before the main app. On completion,
+/// flips `walkthroughDoneProvider` to `true` and the outer switch fades
+/// into [MainLayout].
+class WalkthroughScreen extends ConsumerStatefulWidget {
+  const WalkthroughScreen({super.key});
 
   @override
-  State<WalkthroughScreen> createState() => _WalkthroughScreenState();
+  ConsumerState<WalkthroughScreen> createState() =>
+      _WalkthroughScreenState();
 }
 
-class _WalkthroughScreenState extends State<WalkthroughScreen>
+class _WalkthroughScreenState extends ConsumerState<WalkthroughScreen>
     with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentPage = 0;
@@ -67,38 +73,28 @@ class _WalkthroughScreenState extends State<WalkthroughScreen>
   @override
   void initState() {
     super.initState();
-
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2000),
     )..repeat(reverse: true);
-
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 3000),
     )..repeat(reverse: true);
-
     _emojiController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..forward();
 
-    _pulseAnim =
-        Tween<double>(begin: 0.92, end: 1.08).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
-
-    _floatAnim = Tween<double>(begin: -10, end: 10).animate(CurvedAnimation(
-      parent: _floatController,
-      curve: Curves.easeInOut,
-    ));
-
-    _emojiScaleAnim =
-        Tween<double>(begin: 0.5, end: 1.0).animate(CurvedAnimation(
-      parent: _emojiController,
-      curve: Curves.elasticOut,
-    ));
+    _pulseAnim = Tween<double>(begin: 0.92, end: 1.08).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+    _floatAnim = Tween<double>(begin: -10, end: 10).animate(
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOut),
+    );
+    _emojiScaleAnim = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _emojiController, curve: Curves.elasticOut),
+    );
   }
 
   @override
@@ -120,11 +116,14 @@ class _WalkthroughScreenState extends State<WalkthroughScreen>
     );
   }
 
+  void _finish() =>
+      ref.read(walkthroughDoneProvider.notifier).markDone();
+
   void _next() {
     if (_currentPage < _pages.length - 1) {
       _goToPage(_currentPage + 1);
     } else {
-      widget.onComplete();
+      _finish();
     }
   }
 
@@ -147,14 +146,13 @@ class _WalkthroughScreenState extends State<WalkthroughScreen>
         body: SafeArea(
           child: Column(
             children: [
-              // ── Skip button ──────────────────────────────────
               Align(
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 24, vertical: 16),
                   child: GestureDetector(
-                    onTap: widget.onComplete,
+                    onTap: _finish,
                     child: AnimatedOpacity(
                       opacity: _currentPage < _pages.length - 1 ? 1 : 0,
                       duration: const Duration(milliseconds: 300),
@@ -162,15 +160,16 @@ class _WalkthroughScreenState extends State<WalkthroughScreen>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.08),
+                          color: Colors.white.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color: Colors.white.withOpacity(0.15)),
+                              color:
+                                  Colors.white.withValues(alpha: 0.15)),
                         ),
                         child: Text(
                           'Skip',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.white.withValues(alpha: 0.6),
                             fontWeight: FontWeight.w600,
                             fontSize: 13,
                           ),
@@ -180,8 +179,6 @@ class _WalkthroughScreenState extends State<WalkthroughScreen>
                   ),
                 ),
               ),
-
-              // ── Page view ────────────────────────────────────
               Expanded(
                 child: PageView.builder(
                   controller: _pageController,
@@ -201,13 +198,10 @@ class _WalkthroughScreenState extends State<WalkthroughScreen>
                   },
                 ),
               ),
-
-              // ── Dot indicators + CTA ─────────────────────────
               Padding(
                 padding: const EdgeInsets.fromLTRB(32, 0, 32, 40),
                 child: Column(
                   children: [
-                    // Dots
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
@@ -221,15 +215,13 @@ class _WalkthroughScreenState extends State<WalkthroughScreen>
                           decoration: BoxDecoration(
                             color: i == _currentPage
                                 ? page.accentColor
-                                : Colors.white.withOpacity(0.25),
+                                : Colors.white.withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 32),
-
-                    // CTA Button
                     GestureDetector(
                       onTap: _next,
                       child: AnimatedContainer(
@@ -238,15 +230,13 @@ class _WalkthroughScreenState extends State<WalkthroughScreen>
                         height: 58,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [
-                              page.accentColor,
-                              page.glowColor,
-                            ],
+                            colors: [page.accentColor, page.glowColor],
                           ),
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: page.glowColor.withOpacity(0.45),
+                              color:
+                                  page.glowColor.withValues(alpha: 0.45),
                               blurRadius: 24,
                               spreadRadius: 2,
                               offset: const Offset(0, 6),
@@ -268,7 +258,6 @@ class _WalkthroughScreenState extends State<WalkthroughScreen>
                         ),
                       ),
                     ),
-
                     if (_currentPage == _pages.length - 1) ...[
                       const SizedBox(height: 16),
                       GestureDetector(
@@ -276,10 +265,11 @@ class _WalkthroughScreenState extends State<WalkthroughScreen>
                         child: Text(
                           'Review walkthrough',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.45),
+                            color: Colors.white.withValues(alpha: 0.45),
                             fontSize: 13,
                             decoration: TextDecoration.underline,
-                            decorationColor: Colors.white.withOpacity(0.3),
+                            decorationColor:
+                                Colors.white.withValues(alpha: 0.3),
                           ),
                         ),
                       ),
@@ -294,10 +284,6 @@ class _WalkthroughScreenState extends State<WalkthroughScreen>
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Page Content Widget
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _PageContent extends StatelessWidget {
   final _WTPage page;
@@ -319,7 +305,6 @@ class _PageContent extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 16),
-          // ── Illustration / Emoji ────────────────────────────
           Expanded(
             flex: 5,
             child: Center(
@@ -334,12 +319,24 @@ class _PageContent extends StatelessWidget {
                     ),
                   );
                 },
-                child: _buildIllustration(),
+                child: ScaleTransition(
+                  scale: emojiScaleAnim,
+                  child: SizedBox(
+                    width: 280,
+                    height: 280,
+                    child: CustomPaint(
+                      painter: _IllustrationPainter(
+                        type: page.illustration,
+                        accentColor: page.accentColor,
+                        glowColor: page.glowColor,
+                        emoji: page.emoji,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-
-          // ── Text ────────────────────────────────────────────
           Expanded(
             flex: 4,
             child: Column(
@@ -364,7 +361,7 @@ class _PageContent extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15.5,
                     height: 1.6,
-                    color: Colors.white.withOpacity(0.65),
+                    color: Colors.white.withValues(alpha: 0.65),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -375,29 +372,7 @@ class _PageContent extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildIllustration() {
-    return ScaleTransition(
-      scale: emojiScaleAnim,
-      child: SizedBox(
-        width: 280,
-        height: 280,
-        child: CustomPaint(
-          painter: _IllustrationPainter(
-            type: page.illustration,
-            accentColor: page.accentColor,
-            glowColor: page.glowColor,
-            emoji: page.emoji,
-          ),
-        ),
-      ),
-    );
-  }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Custom Painter
-// ─────────────────────────────────────────────────────────────────────────────
 
 enum _IllustrationType { eye, mood, scene, program }
 
@@ -419,26 +394,23 @@ class _IllustrationPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
 
-    // ── Ambient glow ─────────────────────────────────────────
     final glowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          glowColor.withOpacity(0.35),
-          glowColor.withOpacity(0.0),
+          glowColor.withValues(alpha: 0.35),
+          glowColor.withValues(alpha: 0.0),
         ],
       ).createShader(Rect.fromCircle(center: center, radius: radius));
     canvas.drawCircle(center, radius, glowPaint);
 
-    // ── Concentric rings ─────────────────────────────────────
     final ringPaint = Paint()
-      ..color = accentColor.withOpacity(0.12)
+      ..color = accentColor.withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     for (int i = 1; i <= 3; i++) {
       canvas.drawCircle(center, radius * 0.28 * i, ringPaint);
     }
 
-    // ── Type-specific extras ──────────────────────────────────
     switch (type) {
       case _IllustrationType.mood:
         _drawMoodRings(canvas, center, radius);
@@ -453,28 +425,24 @@ class _IllustrationPainter extends CustomPainter {
         break;
     }
 
-    // ── Central emoji ─────────────────────────────────────────
     final tp = TextPainter(
       text: TextSpan(text: emoji, style: const TextStyle(fontSize: 80)),
       textDirection: TextDirection.ltr,
     );
     tp.layout();
-    tp.paint(
-        canvas, center - Offset(tp.width / 2, tp.height / 2));
+    tp.paint(canvas, center - Offset(tp.width / 2, tp.height / 2));
   }
 
   void _drawMoodRings(Canvas canvas, Offset center, double radius) {
-    // draw 5 mood emoji dots in arc
     final emojis = ['😔', '😢', '😐', '🙂', '😊'];
     for (int i = 0; i < emojis.length; i++) {
       final angle = math.pi + (i / (emojis.length - 1)) * math.pi;
       final x = center.dx + radius * 0.78 * math.cos(angle);
       final y = center.dy + radius * 0.78 * math.sin(angle);
 
-      // Highlight active (last)
       if (i == emojis.length - 1) {
         final highlightPaint = Paint()
-          ..color = accentColor.withOpacity(0.4)
+          ..color = accentColor.withValues(alpha: 0.4)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
         canvas.drawCircle(Offset(x, y), 20, highlightPaint);
       }
@@ -492,7 +460,7 @@ class _IllustrationPainter extends CustomPainter {
 
   void _drawSceneDots(Canvas canvas, Offset center, double radius) {
     final rng = math.Random(42);
-    final dotPaint = Paint()..color = accentColor.withOpacity(0.3);
+    final dotPaint = Paint()..color = accentColor.withValues(alpha: 0.3);
     for (int i = 0; i < 20; i++) {
       final angle = rng.nextDouble() * math.pi * 2;
       final r = radius * (0.5 + rng.nextDouble() * 0.45);
@@ -504,10 +472,10 @@ class _IllustrationPainter extends CustomPainter {
 
   void _drawProgramCards(Canvas canvas, Offset center, double radius) {
     final cardPaint = Paint()
-      ..color = accentColor.withOpacity(0.18)
+      ..color = accentColor.withValues(alpha: 0.18)
       ..style = PaintingStyle.fill;
     final borderPaint = Paint()
-      ..color = accentColor.withOpacity(0.4)
+      ..color = accentColor.withValues(alpha: 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
 
@@ -523,8 +491,8 @@ class _IllustrationPainter extends CustomPainter {
     ];
 
     for (int i = 0; i < offsets.length; i++) {
-      final rect =
-          RRect.fromRectAndRadius(offsets[i] & sizes[i], const Radius.circular(10));
+      final rect = RRect.fromRectAndRadius(
+          offsets[i] & sizes[i], const Radius.circular(10));
       canvas.drawRRect(rect, cardPaint);
       canvas.drawRRect(rect, borderPaint);
     }
@@ -532,13 +500,8 @@ class _IllustrationPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _IllustrationPainter oldDelegate) =>
-      oldDelegate.type != type ||
-      oldDelegate.accentColor != accentColor;
+      oldDelegate.type != type || oldDelegate.accentColor != accentColor;
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-//  Page Data Model
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _WTPage {
   final List<Color> gradient;

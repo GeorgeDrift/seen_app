@@ -1,41 +1,45 @@
 import 'package:flutter/material.dart';
-import '../app_state.dart';
-import '../theme.dart';
-import '../models.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ContextPreviewScreen extends StatelessWidget {
-  final AppState appState;
-  final VoidCallback onProceedToScene;
+import '../../core/theme/app_theme.dart';
+import '../../data/local/demo_profiles.dart';
+import '../../data/models/demo_profile.dart';
+import '../controllers/app_navigation_controller.dart';
+import '../controllers/day_flow_controller.dart';
+import '../controllers/profile_controller.dart';
 
-  const ContextPreviewScreen({
-    super.key,
-    required this.appState,
-    required this.onProceedToScene,
-  });
+/// Screen 1 — shows the passive data and interpreted signals for today,
+/// plus the profile picker. Reads everything from providers; the only
+/// action it takes is switching profile and advancing the step.
+class ContextPreviewScreen extends ConsumerWidget {
+  const ContextPreviewScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final ctx = appState.currentContext;
-    final signals = appState.interpretedSignals;
-    final activeProfile = appState.activeProfileName;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(activeProfileProvider);
+    final flow = ref.watch(dayFlowControllerProvider);
+    final ctx = flow.context;
+    final signals = flow.signals;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Banner Badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.12),
+              color: AppColors.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+              border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.3)),
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.query_stats, size: 14, color: AppColors.primary),
+                Icon(Icons.query_stats,
+                    size: 14, color: AppColors.primary),
                 SizedBox(width: 6),
                 Text(
                   'SCREEN 1: DAILY CONTEXT PREVIEW',
@@ -50,7 +54,6 @@ class ContextPreviewScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-
           Text(
             "Today's Passive Data Context",
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -60,32 +63,38 @@ class ContextPreviewScreen extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            "Passive data signals collected from sensors/apps. Seen uses these facts to compose today's visual hidden-object scene without guessing what they mean.",
-            style: TextStyle(fontSize: 13, color: Colors.grey[400], height: 1.4),
+            "Simulated passive context for prototype demonstration. Seen uses these facts to compose today's visual hidden-object scene without guessing what they mean.",
+            style: TextStyle(
+                fontSize: 13, color: Colors.grey[400], height: 1.4),
           ),
           const SizedBox(height: 24),
-
-          // Demo Profile Switcher
           Text(
             'Select Simulated Demo Profile:',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 14, fontWeight: FontWeight.bold),
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontSize: 14, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                _buildProfileChip(context, 'Profile A (Overloaded)', Icons.thunderstorm_outlined, AppColors.coral),
-                const SizedBox(width: 8),
-                _buildProfileChip(context, 'Profile B (Active)', Icons.wb_sunny_outlined, AppColors.amber),
-                const SizedBox(width: 8),
-                _buildProfileChip(context, 'Profile C (Quiet Recovery)', Icons.bedtime_outlined, AppColors.sage),
+                for (final p in DemoProfiles.all) ...[
+                  _buildProfileChip(
+                    context: context,
+                    ref: ref,
+                    label: p.label,
+                    icon: _iconForProfile(p.key),
+                    color: _colorForProfile(p.key),
+                    isSelected: profile.label == p.label,
+                  ),
+                  const SizedBox(width: 8),
+                ],
               ],
             ),
           ),
           const SizedBox(height: 24),
-
-          // Raw Telemetry Cards Grid
           LayoutBuilder(
             builder: (context, constraints) {
               final isWide = constraints.maxWidth > 700;
@@ -99,22 +108,26 @@ class ContextPreviewScreen extends StatelessWidget {
                 children: [
                   _buildMetricCard(
                     title: 'Sleep Duration',
-                    value: '${ctx.sleepHours?.toStringAsFixed(1) ?? "--"} hrs',
-                    subtitle: 'Baseline: ${ctx.sleepComparison.toUpperCase()}',
+                    value:
+                        '${ctx.sleepHours?.toStringAsFixed(1) ?? "--"} hrs',
+                    subtitle:
+                        'Baseline: ${ctx.sleepComparison.toUpperCase()}',
                     icon: Icons.dark_mode_outlined,
                     color: AppColors.sleep,
                   ),
                   _buildMetricCard(
                     title: 'Steps / Movement',
                     value: '${ctx.steps ?? 0}',
-                    subtitle: 'Activity: ${ctx.activityComparison.toUpperCase()}',
+                    subtitle:
+                        'Activity: ${ctx.activityComparison.toUpperCase()}',
                     icon: Icons.directions_walk,
                     color: AppColors.steps,
                   ),
                   _buildMetricCard(
                     title: 'Calendar Load',
                     value: '${ctx.calendarEventCount} events',
-                    subtitle: 'Density: ${ctx.calendarLoad.toUpperCase()}',
+                    subtitle:
+                        'Density: ${ctx.calendarLoad.toUpperCase()}',
                     icon: Icons.calendar_month,
                     color: AppColors.calendar,
                   ),
@@ -130,8 +143,6 @@ class ContextPreviewScreen extends StatelessWidget {
             },
           ),
           const SizedBox(height: 24),
-
-          // Signal Interpreter Engine Output
           GlassContainer(
             padding: const EdgeInsets.all(20),
             borderRadius: 16,
@@ -147,23 +158,31 @@ class ContextPreviewScreen extends StatelessWidget {
                     const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.memory, color: AppColors.primary, size: 18),
+                        Icon(Icons.memory,
+                            color: AppColors.primary, size: 18),
                         SizedBox(width: 8),
                         Text(
                           'Signal Interpreter Output',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
                         ),
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
+                        color: Colors.white.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: const Text(
                         'Non-Clinical Tags',
-                        style: TextStyle(fontSize: 10, color: AppColors.sage, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.sage,
+                            fontWeight: FontWeight.bold),
                       ),
                     )
                   ],
@@ -171,15 +190,17 @@ class ContextPreviewScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Raw data is transformed into non-judgmental semantic tags for clue scoring.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                  style:
+                      TextStyle(fontSize: 12, color: Colors.grey[400]),
                 ),
-                const Divider(height: 24, color: AppColors.borderTranslucent),
-
+                const Divider(
+                    height: 24, color: AppColors.borderTranslucent),
                 ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: signals.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final sig = signals[index];
                     return Row(
@@ -195,32 +216,44 @@ class ContextPreviewScreen extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
                                   Text(
                                     sig.tag,
-                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                                    style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white),
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     '(${sig.source})',
-                                    style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                    style: const TextStyle(
+                                        fontSize: 11,
+                                        color:
+                                            AppColors.textSecondary),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 sig.explanation,
-                                style: TextStyle(fontSize: 12, color: Colors.grey[300]),
+                                style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[300]),
                               ),
                             ],
                           ),
                         ),
                         Text(
                           'Strength: ${(sig.strength * 100).toStringAsFixed(0)}%',
-                          style: const TextStyle(fontSize: 11, color: AppColors.primary, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold),
                         ),
                       ],
                     );
@@ -230,19 +263,21 @@ class ContextPreviewScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
-
-          // Proceed Button
           Align(
             alignment: Alignment.centerRight,
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24, vertical: 16),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 elevation: 4,
               ),
-              onPressed: onProceedToScene,
+              onPressed: () => ref
+                  .read(patientStepProvider.notifier)
+                  .go(PatientStep.hiddenScene),
               icon: const Icon(Icons.palette_outlined, size: 18),
               label: const Text(
                 'Proceed to Scene Composition →',
@@ -255,12 +290,41 @@ class ContextPreviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileChip(BuildContext context, String title, IconData icon, Color color) {
-    final isSelected = appState.activeProfileName == title;
+  IconData _iconForProfile(DemoProfileKey k) {
+    switch (k) {
+      case DemoProfileKey.a:
+        return Icons.thunderstorm_outlined;
+      case DemoProfileKey.b:
+        return Icons.wb_sunny_outlined;
+      case DemoProfileKey.c:
+        return Icons.bedtime_outlined;
+    }
+  }
+
+  Color _colorForProfile(DemoProfileKey k) {
+    switch (k) {
+      case DemoProfileKey.a:
+        return AppColors.coral;
+      case DemoProfileKey.b:
+        return AppColors.amber;
+      case DemoProfileKey.c:
+        return AppColors.sage;
+    }
+  }
+
+  Widget _buildProfileChip({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String label,
+    required IconData icon,
+    required Color color,
+    required bool isSelected,
+  }) {
     return ChoiceChip(
-      avatar: Icon(icon, size: 14, color: isSelected ? Colors.black : color),
+      avatar:
+          Icon(icon, size: 14, color: isSelected ? Colors.black : color),
       label: Text(
-        title,
+        label,
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.bold,
@@ -269,13 +333,17 @@ class ContextPreviewScreen extends StatelessWidget {
       ),
       selected: isSelected,
       selectedColor: color,
-      backgroundColor: Colors.white.withOpacity(0.04),
+      backgroundColor: Colors.white.withValues(alpha: 0.04),
       onSelected: (selected) {
-        if (selected) appState.setDemoProfile(title);
+        if (selected) {
+          ref.read(activeProfileProvider.notifier).selectByLabel(label);
+        }
       },
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
-        side: BorderSide(color: isSelected ? color : Colors.white.withOpacity(0.1)),
+        side: BorderSide(
+            color:
+                isSelected ? color : Colors.white.withValues(alpha: 0.1)),
       ),
     );
   }
@@ -301,7 +369,10 @@ class ContextPreviewScreen extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.bold),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -310,12 +381,18 @@ class ContextPreviewScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
+            style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                color: Colors.white),
           ),
           const SizedBox(height: 2),
           Text(
             subtitle,
-            style: TextStyle(fontSize: 9.5, color: color, fontWeight: FontWeight.w600),
+            style: TextStyle(
+                fontSize: 9.5,
+                color: color,
+                fontWeight: FontWeight.w600),
           ),
         ],
       ),
