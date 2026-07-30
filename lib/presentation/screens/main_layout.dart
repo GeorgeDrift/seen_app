@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_theme.dart';
@@ -9,9 +10,11 @@ import 'patterns_screen.dart';
 import 'scene_screen.dart';
 import 'therapist_portal.dart';
 
-/// The framed shell around the four patient screens and the therapist
-/// portal. Top header + patient breadcrumb navigation live here; everything
-/// below reads its own state from providers.
+/// The framed shell around the four patient screens and the therapist portal.
+///
+/// Patient screens are rendered FULL-SCREEN with no shell chrome —
+/// each screen manages its own background, header, and navigation.
+/// The therapist portal still uses the original dark-mode shell with tabs.
 class MainLayout extends ConsumerWidget {
   const MainLayout({super.key});
 
@@ -19,6 +22,87 @@ class MainLayout extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(appModeProvider);
 
+    if (mode == AppMode.therapist) {
+      return _TherapistShell(ref: ref);
+    }
+
+    // ── Patient mode: full-screen immersive, no app-level chrome ─────────
+    return _PatientFlow();
+  }
+}
+
+// ── Patient Flow — full-screen per-step ──────────────────────────────────────
+
+class _PatientFlow extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final step = ref.watch(patientStepProvider);
+
+    // Determine the status-bar style per step
+    // Light steps (contextPreview, dailySummary) → dark icons
+    // Dark steps (hiddenScene) → light icons
+    final isDarkStep = step == PatientStep.hiddenScene;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: isDarkStep
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: _bgForStep(step),
+        body: SafeArea(
+          // Scene screen manages its own SafeArea internally
+          top: step == PatientStep.hiddenScene ? false : true,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 350),
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: child,
+            ),
+            child: KeyedSubtree(
+              key: ValueKey(step),
+              child: _buildStep(step),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _bgForStep(PatientStep step) {
+    switch (step) {
+      case PatientStep.contextPreview:
+        return Colors.white;
+      case PatientStep.hiddenScene:
+        return const Color(0xFF0F172A);
+      case PatientStep.dailySummary:
+        return const Color(0xFF0F172A);
+      case PatientStep.patterns:
+        return const Color(0xFF0F172A);
+    }
+  }
+
+  Widget _buildStep(PatientStep step) {
+    switch (step) {
+      case PatientStep.contextPreview:
+        return const ContextPreviewScreen();
+      case PatientStep.hiddenScene:
+        return const SceneScreen();
+      case PatientStep.dailySummary:
+        return const DailySummaryScreen();
+      case PatientStep.patterns:
+        return const PatternsScreen();
+    }
+  }
+}
+
+// ── Therapist Shell — keeps full dark chrome ──────────────────────────────────
+
+class _TherapistShell extends StatelessWidget {
+  const _TherapistShell({required this.ref});
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -34,16 +118,9 @@ class MainLayout extends ConsumerWidget {
         child: SafeArea(
           child: Column(
             children: [
-              const _TopHeader(),
-              if (mode == AppMode.patient) const _PatientJourneyStepper(),
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: mode == AppMode.therapist
-                      ? const TherapistPortalScreen(
-                          key: ValueKey('therapist'))
-                      : const _PatientStepContent(key: ValueKey('patient')),
-                ),
+              _TherapistHeader(ref: ref),
+              const Expanded(
+                child: TherapistPortalScreen(),
               ),
             ],
           ),
@@ -53,12 +130,12 @@ class MainLayout extends ConsumerWidget {
   }
 }
 
-class _TopHeader extends ConsumerWidget {
-  const _TopHeader();
+class _TherapistHeader extends StatelessWidget {
+  const _TherapistHeader({required this.ref});
+  final WidgetRef ref;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final mode = ref.watch(appModeProvider);
+  Widget build(BuildContext context) {
     final modeNotifier = ref.read(appModeProvider.notifier);
 
     return GlassContainer(
@@ -95,189 +172,50 @@ class _TopHeader extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              const Text(
+                'S E E N  —  Therapist Portal',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                  letterSpacing: 1.5,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          GestureDetector(
+            onTap: () => modeNotifier.set(AppMode.patient),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  Icon(Icons.person_outline,
+                      size: 14, color: AppColors.textSecondary),
+                  SizedBox(width: 6),
                   Text(
-                    'S E E N',
+                    'Patient View',
                     style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                      letterSpacing: 2.0,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    'BEHAVIORAL ANNOTATION SYSTEM',
-                    style: TextStyle(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2,
-                      color: AppColors.primary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-          Row(
-            children: [
-              _ModeToggleItem(
-                label: 'Patient View',
-                icon: Icons.person_outline,
-                isActive: mode == AppMode.patient,
-                onTap: () => modeNotifier.set(AppMode.patient),
-              ),
-              const SizedBox(width: 8),
-              _ModeToggleItem(
-                label: 'Therapist Portal',
-                icon: Icons.medical_services_outlined,
-                isActive: mode == AppMode.therapist,
-                onTap: () => modeNotifier.set(AppMode.therapist),
-              ),
-            ],
+            ),
           ),
         ],
       ),
     );
-  }
-}
-
-class _ModeToggleItem extends StatelessWidget {
-  const _ModeToggleItem({
-    required this.label,
-    required this.icon,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  final String label;
-  final IconData icon;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color:
-              isActive ? Colors.white.withValues(alpha: 0.08) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isActive ? AppColors.primary : Colors.transparent,
-            width: 1.0,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 14,
-              color: isActive ? AppColors.primary : AppColors.textSecondary,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-                color: isActive ? Colors.white : AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PatientJourneyStepper extends ConsumerWidget {
-  const _PatientJourneyStepper();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final step = ref.watch(patientStepProvider);
-    final stepNotifier = ref.read(patientStepProvider.notifier);
-
-    Widget divider() => const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 6),
-          child: Icon(Icons.chevron_right,
-              size: 14, color: AppColors.textSecondary),
-        );
-
-    Widget crumb(int index, String label, PatientStep target) {
-      final isActive = step == target;
-      return GestureDetector(
-        onTap: () => stepNotifier.go(target),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: isActive
-                ? AppColors.primary.withValues(alpha: 0.15)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              color:
-                  isActive ? AppColors.primary : AppColors.textSecondary,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.02),
-        border: const Border(
-            bottom: BorderSide(
-                color: AppColors.borderTranslucent, width: 0.8)),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            crumb(0, '1. Context', PatientStep.contextPreview),
-            divider(),
-            crumb(1, '2. Scene', PatientStep.hiddenScene),
-            divider(),
-            crumb(2, '3. Summary', PatientStep.dailySummary),
-            divider(),
-            crumb(3, '4. Patterns', PatientStep.patterns),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PatientStepContent extends ConsumerWidget {
-  const _PatientStepContent({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final step = ref.watch(patientStepProvider);
-    switch (step) {
-      case PatientStep.contextPreview:
-        return const ContextPreviewScreen();
-      case PatientStep.hiddenScene:
-        return const SceneScreen();
-      case PatientStep.dailySummary:
-        return const DailySummaryScreen();
-      case PatientStep.patterns:
-        return const PatternsScreen();
-    }
   }
 }

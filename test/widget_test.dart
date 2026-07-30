@@ -1,32 +1,43 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seen_app/main.dart';
-import 'package:seen_app/presentation/controllers/app_navigation_controller.dart';
 
 void main() {
-  testWidgets('Seen app renders main layout after walkthrough',
-      (WidgetTester tester) async {
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          // Skip the intro so the main layout mounts immediately.
-          walkthroughDoneProvider.overrideWith(
-              () => _AlreadyDoneWalkthroughController()),
-        ],
-        child: const SeenApp(),
-      ),
+  testWidgets('Seen app renders the reflection welcome screen', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(const ProviderScope(child: SeenApp()));
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Good evening,'), findsOneWidget);
+    expect(find.textContaining('Explore my day'), findsOneWidget);
+
+    final exploreButton = find.widgetWithText(
+      ElevatedButton,
+      '✦   Explore my day',
     );
+    await tester.ensureVisible(exploreButton);
+    await tester.tap(exploreButton);
+    await tester.pumpAndSettle();
 
-    // Let AnimatedSwitcher and initial pulses settle.
-    await tester.pumpAndSettle(const Duration(milliseconds: 800));
+    expect(find.text('YOUR SCENE IS READY'), findsOneWidget);
+    expect(find.textContaining('Enter the scene'), findsOneWidget);
 
-    expect(find.text('S E E N'), findsOneWidget);
-    expect(find.text('Patient View'), findsOneWidget);
-    expect(find.text('Therapist Portal'), findsOneWidget);
+    await tester.ensureVisible(find.textContaining('Enter the scene'));
+    await tester.tap(find.textContaining('Enter the scene'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('What brings a part of your day back to mind?'),
+      findsOneWidget,
+    );
+    expect(find.text('0 moments found'), findsOneWidget);
   });
-}
-
-class _AlreadyDoneWalkthroughController extends WalkthroughDoneController {
-  @override
-  bool build() => true;
 }
