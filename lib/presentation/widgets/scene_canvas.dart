@@ -79,9 +79,9 @@ class _SceneCanvasState extends ConsumerState<SceneCanvas>
                 Text(
                   'Find three things that felt familiar today.',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
@@ -93,8 +93,10 @@ class _SceneCanvasState extends ConsumerState<SceneCanvas>
                       : Colors.white.withValues(alpha: 0.2),
                   width: hintLevel > 0 ? 1.5 : 1.0,
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
               onPressed: flowNotifier.cycleHint,
               icon: Icon(
@@ -108,8 +110,8 @@ class _SceneCanvasState extends ConsumerState<SceneCanvas>
                 hintLevel == 0
                     ? 'Hint'
                     : (hintLevel == 1
-                        ? 'Hint: Region Highlight'
-                        : 'Hint: Outline Clues'),
+                          ? 'Hint: Region Highlight'
+                          : 'Hint: Outline Clues'),
                 style: TextStyle(
                   fontSize: 11,
                   color: hintLevel > 0 ? AppColors.amber : Colors.white,
@@ -133,14 +135,17 @@ class _SceneCanvasState extends ConsumerState<SceneCanvas>
               Text(
                 'Scene Items: ${visibleClues.length} total (${scene.signalInformedCount} signal-informed, ${scene.possibleExplanationCount} explanations, ${scene.helpfulCount} restorative, ${scene.distractorCount} distractors)',
                 style: const TextStyle(
-                    fontSize: 10, color: AppColors.textSecondary),
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                ),
               ),
               Text(
                 'Selections: ${flow.selections.length}/$kMaxSelectionsPerDay',
                 style: const TextStyle(
-                    fontSize: 10,
-                    color: AppColors.sage,
-                    fontWeight: FontWeight.bold),
+                  fontSize: 10,
+                  color: AppColors.sage,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -185,8 +190,7 @@ class _SceneCanvasState extends ConsumerState<SceneCanvas>
                       builder: (context, constraints) {
                         return Stack(
                           children: visibleClues.map((clue) {
-                            final isSelected =
-                                selectedIds.contains(clue.id);
+                            final isSelected = selectedIds.contains(clue.id);
                             final posX = clue.x * constraints.maxWidth;
                             final posY = clue.y * constraints.maxHeight;
 
@@ -197,11 +201,12 @@ class _SceneCanvasState extends ConsumerState<SceneCanvas>
                                 animation: _pulseController,
                                 builder: (context, child) {
                                   final pulseVal = _pulseController.value;
-                                  final clueColor =
-                                      _getClueColor(clue.category, isSelected);
+                                  final clueColor = _getClueColor(
+                                    clue.category,
+                                    isSelected,
+                                  );
                                   return GestureDetector(
-                                    onTap: () =>
-                                        widget.onClueTapped(clue),
+                                    onTap: () => widget.onClueTapped(clue),
                                     child: Container(
                                       width: 48,
                                       height: 48,
@@ -223,7 +228,7 @@ class _SceneCanvasState extends ConsumerState<SceneCanvas>
                                                   BoxShadow(
                                                     color: AppColors.amber,
                                                     blurRadius: 10,
-                                                  )
+                                                  ),
                                                 ],
                                               ),
                                             ),
@@ -234,25 +239,30 @@ class _SceneCanvasState extends ConsumerState<SceneCanvas>
                                               shape: BoxShape.circle,
                                               color: isSelected
                                                   ? AppColors.primary
-                                                      .withValues(alpha: 0.2)
+                                                        .withValues(alpha: 0.2)
                                                   : AppColors.backgroundStart
-                                                      .withValues(alpha: 0.7),
+                                                        .withValues(alpha: 0.7),
                                               border: Border.all(
                                                 color: isSelected
                                                     ? AppColors.primary
                                                     : clueColor.withValues(
-                                                        alpha: 0.6),
+                                                        alpha: 0.6,
+                                                      ),
                                                 width: isSelected ? 2.0 : 1.0,
                                               ),
                                               boxShadow: [
                                                 BoxShadow(
                                                   color: isSelected
                                                       ? AppColors.primary
-                                                          .withValues(alpha: 0.4)
+                                                            .withValues(
+                                                              alpha: 0.4,
+                                                            )
                                                       : clueColor.withValues(
-                                                          alpha: 0.25),
-                                                  blurRadius: 6 + (pulseVal * 3),
-                                                )
+                                                          alpha: 0.25,
+                                                        ),
+                                                  blurRadius:
+                                                      6 + (pulseVal * 3),
+                                                ),
                                               ],
                                             ),
                                             child: Icon(
@@ -270,10 +280,13 @@ class _SceneCanvasState extends ConsumerState<SceneCanvas>
                                             child: Container(
                                               padding:
                                                   const EdgeInsets.symmetric(
-                                                      horizontal: 6, vertical: 2),
+                                                    horizontal: 6,
+                                                    vertical: 2,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                color: Colors.black
-                                                    .withValues(alpha: 0.8),
+                                                color: Colors.black.withValues(
+                                                  alpha: 0.8,
+                                                ),
                                                 borderRadius:
                                                     BorderRadius.circular(4),
                                               ),
@@ -308,23 +321,31 @@ class _SceneCanvasState extends ConsumerState<SceneCanvas>
                       style: TextButton.styleFrom(
                         backgroundColor: Colors.black.withValues(alpha: 0.6),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                       ),
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text(
-                                "Neutral state recorded: 'Nothing here matched my day'"),
+                              "Neutral state recorded: 'Nothing here matched my day'",
+                            ),
                             duration: Duration(seconds: 2),
                           ),
                         );
                       },
-                      icon: const Icon(Icons.remove_circle_outline,
-                          size: 12, color: AppColors.textSecondary),
+                      icon: const Icon(
+                        Icons.remove_circle_outline,
+                        size: 12,
+                        color: AppColors.textSecondary,
+                      ),
                       label: const Text(
                         'Nothing here matched my day',
                         style: TextStyle(
-                            fontSize: 10, color: AppColors.textSecondary),
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                   ),
@@ -379,8 +400,8 @@ class RoomBackgroundPainter extends CustomPainter {
       colors: weather == 'rain' || weather == 'snow'
           ? [const Color(0xFF0F172A), const Color(0xFF0B101D)]
           : (weather == 'sunny'
-              ? [const Color(0xFF1E1E38), const Color(0xFF0F172A)]
-              : [const Color(0xFF181B34), const Color(0xFF0F172A)]),
+                ? [const Color(0xFF1E1E38), const Color(0xFF0F172A)]
+                : [const Color(0xFF181B34), const Color(0xFF0F172A)]),
     );
 
     canvas.drawRect(rect, Paint()..shader = bgGrad.createShader(rect));
@@ -433,8 +454,9 @@ class RegionHintPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final unselected =
-        visibleClues.where((c) => !selectedIds.contains(c.id)).toList();
+    final unselected = visibleClues
+        .where((c) => !selectedIds.contains(c.id))
+        .toList();
     if (unselected.isEmpty) return;
 
     final hintPaint = Paint()

@@ -67,7 +67,8 @@ class Clue {
   final String id;
   final String title;
   final String assetPath;
-  final String category; // sleep | movement | workload | environment | social | physical | recovery | neutral
+  final String
+  category; // sleep | movement | workload | environment | social | physical | recovery | neutral
   final List<String> signalTags;
   final List<String> possibleMeanings;
   final List<String> compatibleBackgrounds;
@@ -86,16 +87,16 @@ class Clue {
   /// The full JSON body the backend's `/follow-up-question` endpoint expects
   /// under `clue`. Frontend-only fields are intentionally omitted.
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'assetPath': assetPath,
-        'category': category,
-        'signalTags': signalTags,
-        'possibleMeanings': possibleMeanings,
-        'compatibleBackgrounds': compatibleBackgrounds,
-        'compatibleSlots': compatibleSlots,
-        'clueType': clueType.wire,
-        'baseWeight': baseWeight,
-        'recentRepeatPenalty': recentRepeatPenalty,
-      };
+    'id': id,
+    'title': title,
+    'assetPath': assetPath,
+    'category': category,
+    'signalTags': signalTags,
+    'possibleMeanings': possibleMeanings,
+    'compatibleBackgrounds': compatibleBackgrounds,
+    'compatibleSlots': compatibleSlots,
+    'clueType': clueType.wire,
+    'baseWeight': baseWeight,
+    'recentRepeatPenalty': recentRepeatPenalty,
+  };
 }

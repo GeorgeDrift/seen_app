@@ -104,8 +104,7 @@ class DayFlowController extends Notifier<DayFlowState> {
 
   void removeSelection(String clueId) {
     state = state.copyWith(
-      selections:
-          state.selections.where((s) => s.clueId != clueId).toList(),
+      selections: state.selections.where((s) => s.clueId != clueId).toList(),
     );
   }
 

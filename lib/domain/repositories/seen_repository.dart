@@ -5,6 +5,7 @@ import '../../data/models/daily_entry.dart';
 import '../../data/models/follow_up_question.dart';
 import '../../data/models/interpreted_signal.dart';
 import '../../data/models/pattern_observation.dart';
+import '../../data/models/reflection.dart';
 import '../../data/models/scene_composition.dart';
 import '../engine/pattern_engine.dart';
 
@@ -48,6 +49,23 @@ abstract class SeenRepository {
     required List<InterpretedSignal> interpretedSignals,
     required List<String> displayedClueIds,
     required List<ClueSelection> selectedClues,
+  });
+
+  /// Backend AI call producing a warm narrative reflection from free-text
+  /// moments; falls back to a deterministic joined-paragraph reflection if
+  /// the backend is unavailable or the call fails.
+  Future<Reflection> generateReflection({
+    required DailyContext context,
+    required List<InterpretedSignal> interpretedSignals,
+    required List<Map<String, String>> moments,
+  });
+
+  /// Backend AI call regenerating a reflection per the user's own steering
+  /// note. Falls back to the original reflection, unchanged, if unavailable.
+  Future<Reflection> refineReflection({
+    required String originalReflection,
+    required List<Map<String, String>> moments,
+    required String steeringText,
   });
 
   /// The 14-day synthetic history the demo relies on for pattern insights.

@@ -26,9 +26,9 @@ class InterpretedSignal {
       );
 
   Map<String, dynamic> toJson() => {
-        'tag': tag,
-        'strength': strength,
-        'source': source,
-        'explanation': explanation,
-      };
+    'tag': tag,
+    'strength': strength,
+    'source': source,
+    'explanation': explanation,
+  };
 }

@@ -15,10 +15,14 @@ class ApiConfig {
   final String baseUrl;
   final String functionKey;
 
-  static const _baseUrl =
-      String.fromEnvironment('SEEN_API_BASE_URL', defaultValue: '');
-  static const _functionKey =
-      String.fromEnvironment('SEEN_API_FUNCTION_KEY', defaultValue: '');
+  static const _baseUrl = String.fromEnvironment(
+    'SEEN_API_BASE_URL',
+    defaultValue: '',
+  );
+  static const _functionKey = String.fromEnvironment(
+    'SEEN_API_FUNCTION_KEY',
+    defaultValue: '',
+  );
 
   factory ApiConfig.fromEnvironment() =>
       const ApiConfig(baseUrl: _baseUrl, functionKey: _functionKey);

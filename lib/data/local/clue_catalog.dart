@@ -22,20 +22,20 @@ class ClueCatalog {
         'Lower energy',
         'Harder to focus',
         'Did not affect me',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.signalInformed,
       baseWeight: 0.8,
       recentRepeatPenalty: 0.2,
-      x: 0.22,
-      y: 0.35,
+      x: 0.27,
+      y: 0.45,
       icon: Icons.bedtime,
       question: 'You logged short sleep today. How did this impact your state?',
       options: const [
         'Lower energy',
         'Harder to focus',
         'Did not affect me',
-        'Not sure'
+        'Not sure',
       ],
     ),
     Clue(
@@ -47,58 +47,57 @@ class ClueCatalog {
         'Manageable',
         'Energizing',
         'Draining',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.signalInformed,
       baseWeight: 0.85,
       recentRepeatPenalty: 0.25,
-      x: 0.40,
-      y: 0.45,
+      x: 0.87,
+      y: 0.49,
       icon: Icons.calendar_month,
-      question:
-          'Your schedule was packed today. How did managing this feel?',
+      question: 'Your schedule was packed today. How did managing this feel?',
       options: const ['Manageable', 'Energizing', 'Draining', 'Not sure'],
     ),
     Clue(
       id: 'desk_stillness_01',
-      title: 'Stationary Desk Chair',
+      title: 'Quiet Nightstand',
       category: 'movement',
       signalTags: const ['low_activity'],
       possibleMeanings: const [
         'Deep focus session',
         'Felt physically trapped',
         'Chose recovery',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.signalInformed,
       baseWeight: 0.75,
       recentRepeatPenalty: 0.2,
-      x: 0.58,
-      y: 0.62,
+      x: 0.18,
+      y: 0.58,
       icon: Icons.chair,
       question: 'With low movement today, what was behind staying seated?',
       options: const [
         'Deep focus session',
         'Felt physically trapped',
         'Chose recovery',
-        'Not sure'
+        'Not sure',
       ],
     ),
     Clue(
       id: 'rain_window_01',
-      title: 'Rain-flecked Window',
+      title: 'Window at Night',
       category: 'environment',
       signalTags: const ['rainy_environment'],
       possibleMeanings: const [
         'Cozy atmosphere',
         'Dampened my mood',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.signalInformed,
       baseWeight: 0.7,
       recentRepeatPenalty: 0.15,
-      x: 0.84,
+      x: 0.49,
       y: 0.20,
       icon: Icons.opacity,
       question: 'It rained today. How did the grey weather feel to you?',
@@ -106,7 +105,7 @@ class ClueCatalog {
         'Cozy atmosphere',
         'Dampened my mood',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
     ),
 
@@ -115,22 +114,18 @@ class ClueCatalog {
       id: 'quiet_corner_01',
       title: 'Quiet Corner',
       category: 'recovery',
-      signalTags: const [
-        'high_calendar_load',
-        'short_sleep',
-        'low_activity'
-      ],
+      signalTags: const ['high_calendar_load', 'short_sleep', 'low_activity'],
       possibleMeanings: const [
         'Restorative solitude',
         'Sensory recovery',
         'Felt disconnected',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.possibleExplanation,
       baseWeight: 0.65,
       recentRepeatPenalty: 0.25,
       x: 0.15,
-      y: 0.60,
+      y: 0.87,
       icon: Icons.deck,
       question:
           'You selected Quiet Corner. What did this moment give you today?',
@@ -138,78 +133,77 @@ class ClueCatalog {
         'Restorative solitude',
         'Sensory recovery',
         'Felt disconnected',
-        'Not sure'
+        'Not sure',
       ],
     ),
     Clue(
       id: 'coffee_cup_01',
-      title: 'Empty Espresso Cup',
+      title: 'Warm Mug',
       category: 'sleep',
       signalTags: const ['short_sleep', 'high_calendar_load'],
       possibleMeanings: const [
         'Survival fuel',
         'Cozy morning ritual',
         'Jittery overdrive',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.possibleExplanation,
       baseWeight: 0.7,
       recentRepeatPenalty: 0.2,
-      x: 0.48,
-      y: 0.55,
+      x: 0.38,
+      y: 0.79,
       icon: Icons.coffee,
       question: 'What did this caffeine boost actually represent today?',
       options: const [
         'Survival fuel',
         'Cozy morning ritual',
         'Jittery overdrive',
-        'Not sure'
+        'Not sure',
       ],
     ),
 
     // ── Helpful / Restorative Clues ───────────────────────────
     Clue(
       id: 'walking_shoes_01',
-      title: 'Walking Shoes',
+      title: 'Coat by the Door',
       category: 'movement',
       signalTags: const ['high_activity', 'sunny_environment'],
       possibleMeanings: const [
         'Workout to clear head',
         'Active transit',
         'Social walk',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.helpfulAction,
       baseWeight: 0.75,
       recentRepeatPenalty: 0.2,
-      x: 0.75,
-      y: 0.76,
+      x: 0.13,
+      y: 0.30,
       icon: Icons.directions_run,
-      question:
-          'You clocked high movement today. What motivated you to move?',
+      question: 'You clocked high movement today. What motivated you to move?',
       options: const [
         'Workout to clear head',
         'Active transit',
         'Social walk',
-        'Not sure'
+        'Not sure',
       ],
     ),
     Clue(
       id: 'open_book_01',
-      title: 'Open Journal',
+      title: 'Bookshelf',
       category: 'recovery',
       signalTags: const ['low_calendar_load'],
       possibleMeanings: const [
         'Rejuvenating freedom',
         'Anxious listlessness',
         'Peaceful break',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.helpfulAction,
       baseWeight: 0.6,
       recentRepeatPenalty: 0.15,
-      x: 0.64,
-      y: 0.45,
+      x: 0.83,
+      y: 0.14,
       icon: Icons.menu_book,
       question:
           'Your schedule was open. How did you experience this spaciousness?',
@@ -217,7 +211,7 @@ class ClueCatalog {
         'Rejuvenating freedom',
         'Anxious listlessness',
         'Peaceful break',
-        'Not sure'
+        'Not sure',
       ],
     ),
 
@@ -231,20 +225,20 @@ class ClueCatalog {
         'Late night focus',
         'Ambient room light',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.neutralDistractor,
       baseWeight: 0.4,
       recentRepeatPenalty: 0.05,
-      x: 0.32,
-      y: 0.38,
+      x: 0.82,
+      y: 0.42,
       icon: Icons.light,
       question: 'You tapped the Desk Lamp. Did this moment stand out?',
       options: const [
         'Late night focus',
         'Ambient room light',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
     ),
     Clue(
@@ -255,13 +249,13 @@ class ClueCatalog {
       possibleMeanings: const [
         'Calming indoor nature',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.neutralDistractor,
       baseWeight: 0.4,
       recentRepeatPenalty: 0.05,
-      x: 0.10,
-      y: 0.25,
+      x: 0.70,
+      y: 0.32,
       icon: Icons.local_florist,
       question: 'You selected the House Plant. What did it bring to your day?',
       options: const ['Calming indoor nature', 'Felt neutral', 'Not sure'],
@@ -275,20 +269,20 @@ class ClueCatalog {
         'Focused music work',
         'Blocking out noise',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.neutralDistractor,
       baseWeight: 0.45,
       recentRepeatPenalty: 0.05,
-      x: 0.52,
-      y: 0.70,
+      x: 0.79,
+      y: 0.85,
       icon: Icons.headphones,
       question: 'Did wearing headphones play a role in your day?',
       options: const [
         'Focused music work',
         'Blocking out noise',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
     ),
     Clue(
@@ -299,20 +293,16 @@ class ClueCatalog {
       possibleMeanings: const [
         'Staying hydrated',
         'Ordinary daily item',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.neutralDistractor,
       baseWeight: 0.35,
       recentRepeatPenalty: 0.05,
-      x: 0.68,
-      y: 0.58,
+      x: 0.58,
+      y: 0.77,
       icon: Icons.local_drink,
       question: 'You tapped the Water Bottle. What did this represent?',
-      options: const [
-        'Staying hydrated',
-        'Ordinary daily item',
-        'Not sure'
-      ],
+      options: const ['Staying hydrated', 'Ordinary daily item', 'Not sure'],
     ),
   ];
 

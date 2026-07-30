@@ -61,7 +61,8 @@ class GlassContainer extends StatelessWidget {
       height: height,
       margin: margin,
       decoration: BoxDecoration(
-        boxShadow: boxShadow ??
+        boxShadow:
+            boxShadow ??
             [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.25),
@@ -79,11 +80,9 @@ class GlassContainer extends StatelessWidget {
             decoration: BoxDecoration(
               color: color ?? AppColors.glassBackground,
               borderRadius: BorderRadius.circular(borderRadius),
-              border: border ??
-                  Border.all(
-                    color: AppColors.borderTranslucent,
-                    width: 1.0,
-                  ),
+              border:
+                  border ??
+                  Border.all(color: AppColors.borderTranslucent, width: 1.0),
             ),
             child: child,
           ),
@@ -120,7 +119,7 @@ class GlassButton extends StatelessWidget {
                   color: glowColor!.withValues(alpha: 0.25),
                   blurRadius: 12,
                   spreadRadius: 1,
-                )
+                ),
               ]
             : null,
       ),
@@ -133,11 +132,7 @@ class GlassButton extends StatelessWidget {
             padding: padding,
             borderRadius: borderRadius,
             color: AppColors.glassBackground.withValues(alpha: 0.12),
-            child: Center(
-              widthFactor: 1,
-              heightFactor: 1,
-              child: child,
-            ),
+            child: Center(widthFactor: 1, heightFactor: 1, child: child),
           ),
         ),
       ),
@@ -158,27 +153,37 @@ ThemeData getDarkSeenTheme() {
     fontFamily: 'Inter',
     textTheme: const TextTheme(
       headlineLarge: TextStyle(
-          fontSize: 32.0,
-          fontWeight: FontWeight.w800,
-          color: AppColors.textPrimary,
-          letterSpacing: -0.5),
+        fontSize: 32.0,
+        fontWeight: FontWeight.w800,
+        color: AppColors.textPrimary,
+        letterSpacing: -0.5,
+      ),
       headlineMedium: TextStyle(
-          fontSize: 24.0,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-          letterSpacing: -0.5),
+        fontSize: 24.0,
+        fontWeight: FontWeight.bold,
+        color: AppColors.textPrimary,
+        letterSpacing: -0.5,
+      ),
       titleLarge: TextStyle(
-          fontSize: 20.0,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary),
+        fontSize: 20.0,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textPrimary,
+      ),
       titleMedium: TextStyle(
-          fontSize: 16.0,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary),
+        fontSize: 16.0,
+        fontWeight: FontWeight.w600,
+        color: AppColors.textPrimary,
+      ),
       bodyLarge: TextStyle(
-          fontSize: 16.0, color: AppColors.textPrimary, height: 1.4),
+        fontSize: 16.0,
+        color: AppColors.textPrimary,
+        height: 1.4,
+      ),
       bodyMedium: TextStyle(
-          fontSize: 14.0, color: AppColors.textSecondary, height: 1.4),
+        fontSize: 14.0,
+        color: AppColors.textSecondary,
+        height: 1.4,
+      ),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: Colors.transparent,

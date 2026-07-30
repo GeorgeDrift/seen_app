@@ -9,7 +9,8 @@ enum PatientStep { contextPreview, hiddenScene, dailySummary, patterns }
 /// Whether the intro walkthrough has been completed.
 final walkthroughDoneProvider =
     NotifierProvider<WalkthroughDoneController, bool>(
-        WalkthroughDoneController.new);
+      WalkthroughDoneController.new,
+    );
 
 class WalkthroughDoneController extends Notifier<bool> {
   @override
@@ -20,8 +21,9 @@ class WalkthroughDoneController extends Notifier<bool> {
 }
 
 /// Which top-level pane (patient vs therapist portal) is showing.
-final appModeProvider =
-    NotifierProvider<AppModeController, AppMode>(AppModeController.new);
+final appModeProvider = NotifierProvider<AppModeController, AppMode>(
+  AppModeController.new,
+);
 
 class AppModeController extends Notifier<AppMode> {
   @override
@@ -33,7 +35,8 @@ class AppModeController extends Notifier<AppMode> {
 /// Which step of the patient flow (0..3) is showing.
 final patientStepProvider =
     NotifierProvider<PatientStepController, PatientStep>(
-        PatientStepController.new);
+      PatientStepController.new,
+    );
 
 class PatientStepController extends Notifier<PatientStep> {
   @override

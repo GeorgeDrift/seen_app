@@ -22,7 +22,8 @@ class ActiveProfile {
 
 final activeProfileProvider =
     NotifierProvider<ActiveProfileController, ActiveProfile>(
-        ActiveProfileController.new);
+      ActiveProfileController.new,
+    );
 
 class ActiveProfileController extends Notifier<ActiveProfile> {
   @override

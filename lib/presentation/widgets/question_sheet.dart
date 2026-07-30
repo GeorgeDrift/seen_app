@@ -20,8 +20,7 @@ class ClueQuestionSheet extends ConsumerStatefulWidget {
   final Clue clue;
 
   @override
-  ConsumerState<ClueQuestionSheet> createState() =>
-      _ClueQuestionSheetState();
+  ConsumerState<ClueQuestionSheet> createState() => _ClueQuestionSheetState();
 }
 
 class _ClueQuestionSheetState extends ConsumerState<ClueQuestionSheet> {
@@ -59,15 +58,17 @@ class _ClueQuestionSheetState extends ConsumerState<ClueQuestionSheet> {
           : (answer.toLowerCase() == 'not sure' ? 'uncertain' : 'clear'),
     );
 
-    final accepted =
-        ref.read(dayFlowControllerProvider.notifier).addSelection(selection);
+    final accepted = ref
+        .read(dayFlowControllerProvider.notifier)
+        .addSelection(selection);
     Navigator.pop(context);
 
     if (!accepted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-              "You found three moments. Deselect one to change your picks."),
+            "You found three moments. Deselect one to change your picks.",
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -75,7 +76,8 @@ class _ClueQuestionSheetState extends ConsumerState<ClueQuestionSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              "Recorded selection for ${widget.clue.title}: '$answer'"),
+            "Recorded selection for ${widget.clue.title}: '$answer'",
+          ),
           behavior: SnackBarBehavior.floating,
           backgroundColor: const Color(0xFF0F172A),
           duration: const Duration(seconds: 2),
@@ -118,12 +120,15 @@ class _ClueQuestionSheetState extends ConsumerState<ClueQuestionSheet> {
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 4),
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: _categoryColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(6),
                   border: Border.all(
-                      color: _categoryColor.withValues(alpha: 0.4)),
+                    color: _categoryColor.withValues(alpha: 0.4),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -145,10 +150,13 @@ class _ClueQuestionSheetState extends ConsumerState<ClueQuestionSheet> {
               IconButton(
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
-                icon: const Icon(Icons.close,
-                    size: 18, color: AppColors.textSecondary),
+                icon: const Icon(
+                  Icons.close,
+                  size: 18,
+                  color: AppColors.textSecondary,
+                ),
                 onPressed: () => Navigator.pop(context),
-              )
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -163,8 +171,11 @@ class _ClueQuestionSheetState extends ConsumerState<ClueQuestionSheet> {
           const SizedBox(height: 4),
           Row(
             children: [
-              const Icon(Icons.shield_outlined,
-                  size: 12, color: AppColors.sage),
+              const Icon(
+                Icons.shield_outlined,
+                size: 12,
+                color: AppColors.sage,
+              ),
               const SizedBox(width: 4),
               Text(
                 'Safety Check: Passed • Non-leading personal clarification',
@@ -181,12 +192,13 @@ class _ClueQuestionSheetState extends ConsumerState<ClueQuestionSheet> {
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2, color: AppColors.primary),
+                    strokeWidth: 2,
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
             ),
-            error: (_, _) =>
-                _renderQuestion(context, _localFallback(), theme),
+            error: (_, _) => _renderQuestion(context, _localFallback(), theme),
             data: (q) => _renderQuestion(context, q, theme),
           ),
         ],
@@ -195,13 +207,16 @@ class _ClueQuestionSheetState extends ConsumerState<ClueQuestionSheet> {
   }
 
   FollowUpQuestion _localFallback() => FollowUpQuestion(
-        question: widget.clue.question,
-        options: widget.clue.options,
-        purpose: 'local_fallback',
-      );
+    question: widget.clue.question,
+    options: widget.clue.options,
+    purpose: 'local_fallback',
+  );
 
   Widget _renderQuestion(
-      BuildContext context, FollowUpQuestion q, ThemeData theme) {
+    BuildContext context,
+    FollowUpQuestion q,
+    ThemeData theme,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -234,7 +249,9 @@ class _ClueQuestionSheetState extends ConsumerState<ClueQuestionSheet> {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 12),
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? _categoryColor.withValues(alpha: 0.15)
@@ -289,8 +306,7 @@ class _ClueQuestionSheetState extends ConsumerState<ClueQuestionSheet> {
             onPressed: () => _submit(q, 'Skipped', isSkipped: true),
             child: const Text(
               'Skip this question',
-              style:
-                  TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ),
         ),
