@@ -1,14 +1,32 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:seen_app/main.dart';
+import 'package:seen_app/presentation/controllers/app_navigation_controller.dart';
 
 void main() {
-  testWidgets('Seen app startup smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const SeenApp());
+  testWidgets('Seen app renders main layout after walkthrough',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          // Skip the intro so the main layout mounts immediately.
+          walkthroughDoneProvider.overrideWith(
+              () => _AlreadyDoneWalkthroughController()),
+        ],
+        child: const SeenApp(),
+      ),
+    );
 
-    // Verify that our app displays "S E E N" branding and navigation.
+    // Let AnimatedSwitcher and initial pulses settle.
+    await tester.pumpAndSettle(const Duration(milliseconds: 800));
+
     expect(find.text('S E E N'), findsOneWidget);
     expect(find.text('Patient View'), findsOneWidget);
     expect(find.text('Therapist Portal'), findsOneWidget);
   });
+}
+
+class _AlreadyDoneWalkthroughController extends WalkthroughDoneController {
+  @override
+  bool build() => true;
 }

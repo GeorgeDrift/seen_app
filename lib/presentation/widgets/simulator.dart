@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
-import '../app_state.dart';
-import '../theme.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class TelemetrySimulator extends StatelessWidget {
-  final AppState appState;
+import '../../core/theme/app_theme.dart';
+import '../controllers/day_flow_controller.dart';
+import '../controllers/profile_controller.dart';
 
-  const TelemetrySimulator({
-    super.key,
-    required this.appState,
-  });
+/// Optional utility panel exposed via demo controls / dev overlay. Not wired
+/// into the default patient flow, but ready to drop into any screen — it
+/// reads the current context from the profile controller and pushes tweaks
+/// back through `tune()`.
+class TelemetrySimulator extends ConsumerWidget {
+  const TelemetrySimulator({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final ctx = appState.currentContext;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ctx = ref.watch(dayFlowControllerProvider).context;
+    final profileNotifier = ref.read(activeProfileProvider.notifier);
 
     return GlassContainer(
       padding: const EdgeInsets.all(20),
       borderRadius: 16,
-      border: Border.all(color: Colors.white.withOpacity(0.08)),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -45,8 +48,6 @@ class TelemetrySimulator extends StatelessWidget {
                 ),
           ),
           const Divider(height: 24, color: AppColors.borderTranslucent),
-
-          // Sleep Slider
           _buildMetricSlider(
             context: context,
             label: 'Sleep Duration',
@@ -54,16 +55,16 @@ class TelemetrySimulator extends StatelessWidget {
             min: 0,
             max: 12,
             divisions: 24,
-            displayValue: '${(ctx.sleepHours ?? 7.0).toStringAsFixed(1)} hrs (${ctx.sleepComparison})',
+            displayValue:
+                '${(ctx.sleepHours ?? 7.0).toStringAsFixed(1)} hrs (${ctx.sleepComparison})',
             icon: Icons.dark_mode_outlined,
             color: AppColors.sleep,
             onChanged: (val) {
-              final comp = val < 6.5 ? 'lower' : (val > 8.5 ? 'higher' : 'typical');
-              appState.updateContext(sleepHours: val, sleepComparison: comp);
+              final comp =
+                  val < 6.5 ? 'lower' : (val > 8.5 ? 'higher' : 'typical');
+              profileNotifier.tune(sleepHours: val, sleepComparison: comp);
             },
           ),
-
-          // Steps Slider
           _buildMetricSlider(
             context: context,
             label: 'Daily Footsteps',
@@ -71,17 +72,19 @@ class TelemetrySimulator extends StatelessWidget {
             min: 0,
             max: 15000,
             divisions: 60,
-            displayValue: '${ctx.steps ?? 4000} steps (${ctx.activityComparison})',
+            displayValue:
+                '${ctx.steps ?? 4000} steps (${ctx.activityComparison})',
             icon: Icons.directions_walk,
             color: AppColors.steps,
             onChanged: (val) {
               final stepsVal = val.round();
-              final comp = stepsVal < 3000 ? 'lower' : (stepsVal > 8000 ? 'higher' : 'typical');
-              appState.updateContext(steps: stepsVal, activityComparison: comp);
+              final comp = stepsVal < 3000
+                  ? 'lower'
+                  : (stepsVal > 8000 ? 'higher' : 'typical');
+              profileNotifier.tune(
+                  steps: stepsVal, activityComparison: comp);
             },
           ),
-
-          // Calendar Events Slider
           _buildMetricSlider(
             context: context,
             label: 'Calendar Events',
@@ -89,29 +92,31 @@ class TelemetrySimulator extends StatelessWidget {
             min: 0,
             max: 12,
             divisions: 12,
-            displayValue: '${ctx.calendarEventCount} events (${ctx.calendarLoad})',
+            displayValue:
+                '${ctx.calendarEventCount} events (${ctx.calendarLoad})',
             icon: Icons.calendar_month,
             color: AppColors.calendar,
             onChanged: (val) {
               final evVal = val.round();
-              final load = evVal >= 6 ? 'high' : (evVal <= 1 ? 'low' : 'moderate');
-              appState.updateContext(calendarEventCount: evVal, calendarLoad: load);
+              final load = evVal >= 6
+                  ? 'high'
+                  : (evVal <= 1 ? 'low' : 'moderate');
+              profileNotifier.tune(
+                  calendarEventCount: evVal, calendarLoad: load);
             },
           ),
-
-          // Weather Selector
           const SizedBox(height: 12),
           Text(
             'Weather Condition:',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontSize: 13, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontSize: 13, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             children: ['sunny', 'cloudy', 'rain', 'snow'].map((w) {
               final isSelected = ctx.weather == w;
-              final Color wColor = _getWeatherColor(w);
-
+              final wColor = _getWeatherColor(w);
               return ChoiceChip(
                 label: Text(
                   w.toUpperCase(),
@@ -123,13 +128,16 @@ class TelemetrySimulator extends StatelessWidget {
                 ),
                 selected: isSelected,
                 selectedColor: wColor,
-                backgroundColor: Colors.white.withOpacity(0.04),
+                backgroundColor: Colors.white.withValues(alpha: 0.04),
                 onSelected: (selected) {
-                  if (selected) appState.updateContext(weather: w);
+                  if (selected) profileNotifier.tune(weather: w);
                 },
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
-                  side: BorderSide(color: isSelected ? wColor : Colors.white.withOpacity(0.1)),
+                  side: BorderSide(
+                      color: isSelected
+                          ? wColor
+                          : Colors.white.withValues(alpha: 0.1)),
                 ),
               );
             }).toList(),
@@ -196,12 +204,13 @@ class TelemetrySimulator extends StatelessWidget {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             activeTrackColor: color,
-            inactiveTrackColor: Colors.white.withOpacity(0.08),
+            inactiveTrackColor: Colors.white.withValues(alpha: 0.08),
             thumbColor: color,
-            overlayColor: color.withOpacity(0.12),
+            overlayColor: color.withValues(alpha: 0.12),
             valueIndicatorColor: color,
             trackHeight: 3,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+            thumbShape:
+                const RoundSliderThumbShape(enabledThumbRadius: 6),
           ),
           child: Slider(
             value: value,
