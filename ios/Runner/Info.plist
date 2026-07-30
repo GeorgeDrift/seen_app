@@ -45,5 +45,15 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Seen reads your sleep and step data to build a private, on-device picture of your day.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>Seen does not write any data to Health — this is required by Apple even for read-only access.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Seen checks how many events are on your calendar today to gauge how busy your day was — event titles and details are never read or stored.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Seen checks how many events are on your calendar today to gauge how busy your day was — event titles and details are never read or stored.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Seen uses your approximate location to show today's weather.</string>
 </dict>
 </plist>

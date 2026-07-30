@@ -3,6 +3,8 @@ import '../../data/models/clue_selection.dart';
 import '../../data/models/daily_context.dart';
 import '../../data/models/daily_entry.dart';
 import '../../data/models/follow_up_question.dart';
+import '../../data/models/health_week_day.dart';
+import '../../data/models/health_week_insights.dart';
 import '../../data/models/interpreted_signal.dart';
 import '../../data/models/pattern_observation.dart';
 import '../../data/models/reflection.dart';
@@ -81,4 +83,10 @@ abstract class SeenRepository {
     required String clueA,
     required String clueB,
   });
+
+  /// Backend AI call analyzing a 7-day dataset (passive context +
+  /// reflections) into a pattern worth noticing, what may be helping, and
+  /// recurring themes. Falls back to a static "not enough data" response
+  /// (same shape, low confidence) if the backend is unavailable or fails.
+  Future<WeeklyInsights> weeklyInsights(List<HealthWeekDay> days);
 }
