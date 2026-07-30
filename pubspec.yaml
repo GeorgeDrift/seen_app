@@ -39,6 +39,12 @@ flutter:
   assets:
     - assets/cozy_reflection_header.png
     - assets/cozy_bedroom_scene.png
+    - assets/cozy_purple_bedroom_retreat.png
+    - assets/cozy_plant_filled_bedroom_workspace.png
+    - assets/cozy_sunlit_green_living_space.png
+    - assets/rest_and_reset_map.json
+    - assets/full_and_active_map.json
+    - assets/open_and_steady_map.json
     - assets/figma_intro_background.png
     - assets/figma_loading_background.png
   fonts:

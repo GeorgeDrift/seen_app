@@ -7,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/local/day_progress_store.dart';
 import '../../data/models/clue.dart';
 import '../../data/models/clue_selection.dart';
+import '../../data/models/scene_composition.dart';
+import '../../data/models/scene_tap_map.dart';
 import '../controllers/day_flow_controller.dart';
 import '../providers/api_providers.dart';
 
@@ -73,10 +75,11 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
 
     // 'intro'/'preparing' are transient — never resume directly into them.
     final stage = switch (stored.stage) {
-      'moments' || 'reflection' || 'completed' => _JourneyPage.values.byName(
-        stored.stage,
-      ),
-      _ => stored.selections.isNotEmpty
+      'moments' ||
+      'reflection' ||
+      'completed' => _JourneyPage.values.byName(stored.stage),
+      _ =>
+        stored.selections.isNotEmpty
             ? _JourneyPage.moments
             : _JourneyPage.welcome,
     };
@@ -718,7 +721,7 @@ class _MomentsScreen extends StatelessWidget {
           ),
           Expanded(
             child: _SceneImage(
-              clues: flow.scene.visibleClues,
+              scene: flow.scene,
               selectedIds: selectedIds,
               onSelect: onSelect,
             ),
@@ -795,95 +798,146 @@ class _MomentsScreen extends StatelessWidget {
   }
 }
 
-class _SceneImage extends StatelessWidget {
+class _SceneImage extends StatefulWidget {
   const _SceneImage({
-    required this.clues,
+    required this.scene,
     required this.selectedIds,
     required this.onSelect,
   });
 
-  final List<Clue> clues;
+  final SceneComposition scene;
   final Set<String> selectedIds;
   final ValueChanged<Clue> onSelect;
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final viewport = Size(constraints.maxWidth, constraints.maxHeight);
-        final fitted = applyBoxFit(BoxFit.cover, const Size(1, 1), viewport);
-        final imageRect = Alignment.center.inscribe(
-          fitted.destination,
-          Offset.zero & viewport,
-        );
+  State<_SceneImage> createState() => _SceneImageState();
+}
 
-        return Stack(
-          fit: StackFit.expand,
-          clipBehavior: Clip.hardEdge,
-          children: [
-            Image.asset(
-              'assets/cozy_bedroom_scene.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.center,
+class _SceneImageState extends State<_SceneImage> {
+  late Future<SceneTapMap> _tapMap;
+
+  @override
+  void initState() {
+    super.initState();
+    _tapMap = SceneTapMap.load(widget.scene.kind.tapMapAssetPath);
+  }
+
+  @override
+  void didUpdateWidget(covariant _SceneImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.scene.kind != widget.scene.kind) {
+      _tapMap = SceneTapMap.load(widget.scene.kind.tapMapAssetPath);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<SceneTapMap>(
+      future: _tapMap,
+      builder: (context, snapshot) {
+        final tapMap = snapshot.data;
+        if (tapMap == null) {
+          return SingleChildScrollView(
+            child: Image.asset(
+              widget.scene.assetPath,
+              width: double.infinity,
+              fit: BoxFit.fitWidth,
+              alignment: Alignment.topCenter,
             ),
-            for (final clue in clues)
-              Positioned(
-                left: math.max(
-                  0,
-                  math.min(
-                    constraints.maxWidth - 54,
-                    imageRect.left + clue.x * imageRect.width - 27,
-                  ),
-                ),
-                top: math.max(
-                  0,
-                  math.min(
-                    constraints.maxHeight - 54,
-                    imageRect.top + clue.y * imageRect.height - 27,
-                  ),
-                ),
-                child: Semantics(
-                  button: true,
-                  label: clue.title,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: () => onSelect(clue),
-                    child: SizedBox(
-                      width: 54,
-                      height: 54,
-                      child: Center(
-                        child: AnimatedScale(
-                          duration: const Duration(milliseconds: 180),
-                          scale: selectedIds.contains(clue.id) ? 1 : 0,
-                          child: Container(
-                            width: 25,
-                            height: 25,
-                            decoration: const BoxDecoration(
-                              color: _purple,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Color(0x33000000),
-                                  blurRadius: 6,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.check_rounded,
-                              color: Colors.white,
-                              size: 16,
-                            ),
+          );
+        }
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final canvasSize = Size(
+              constraints.maxWidth,
+              constraints.maxWidth / tapMap.imageSize.aspectRatio,
+            );
+            return SingleChildScrollView(
+              child: SizedBox.fromSize(
+                size: canvasSize,
+                child: Stack(
+                  fit: StackFit.expand,
+                  clipBehavior: Clip.hardEdge,
+                  children: [
+                    Image.asset(
+                      widget.scene.assetPath,
+                      width: canvasSize.width,
+                      height: canvasSize.height,
+                      fit: BoxFit.fill,
+                    ),
+                    for (final target in tapMap.items)
+                      Positioned.fromRect(
+                        rect: target.tapAreaFor(canvasSize),
+                        child: Semantics(
+                          button: true,
+                          label: target.label,
+                          selected: widget.selectedIds.contains(
+                            target.clueId(tapMap.sceneId),
+                          ),
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () =>
+                                widget.onSelect(target.asClue(tapMap.sceneId)),
+                            child: const SizedBox.expand(),
                           ),
                         ),
                       ),
-                    ),
-                  ),
+                    for (final target in tapMap.items)
+                      if (widget.selectedIds.contains(
+                        target.clueId(tapMap.sceneId),
+                      ))
+                        _SceneCheckmark(
+                          position: target.checkmarkFor(canvasSize),
+                          canvasSize: canvasSize,
+                        ),
+                  ],
                 ),
               ),
-          ],
+            );
+          },
         );
       },
+    );
+  }
+}
+
+class _SceneCheckmark extends StatelessWidget {
+  const _SceneCheckmark({required this.position, required this.canvasSize});
+
+  static const _size = 25.0;
+
+  final Offset position;
+  final Size canvasSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final left = (position.dx - _size / 2)
+        .clamp(0.0, math.max(0.0, canvasSize.width - _size))
+        .toDouble();
+    final top = (position.dy - _size / 2)
+        .clamp(0.0, math.max(0.0, canvasSize.height - _size))
+        .toDouble();
+    return Positioned(
+      left: left,
+      top: top,
+      child: IgnorePointer(
+        child: Container(
+          width: _size,
+          height: _size,
+          decoration: const BoxDecoration(
+            color: _purple,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.check_rounded, color: Colors.white, size: 16),
+        ),
+      ),
     );
   }
 }

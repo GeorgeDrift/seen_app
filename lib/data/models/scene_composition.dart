@@ -6,22 +6,33 @@ extension SceneKindPresentation on SceneKind {
   String get assetPath {
     switch (this) {
       case SceneKind.eveningBedroom:
-        return 'assets/cozy_bedroom_scene.png';
+        return 'assets/cozy_sunlit_green_living_space.png';
       case SceneKind.morningRoom:
-        return 'assets/cozy_morning_scene.png';
+        return 'assets/cozy_plant_filled_bedroom_workspace.png';
       case SceneKind.rainyReadingNook:
-        return 'assets/cozy_rainy_scene.png';
+        return 'assets/cozy_purple_bedroom_retreat.png';
+    }
+  }
+
+  String get tapMapAssetPath {
+    switch (this) {
+      case SceneKind.eveningBedroom:
+        return 'assets/open_and_steady_map.json';
+      case SceneKind.morningRoom:
+        return 'assets/full_and_active_map.json';
+      case SceneKind.rainyReadingNook:
+        return 'assets/rest_and_reset_map.json';
     }
   }
 
   String get label {
     switch (this) {
       case SceneKind.eveningBedroom:
-        return 'Evening bedroom';
+        return 'Open and Steady';
       case SceneKind.morningRoom:
-        return 'Sunlit room';
+        return 'Full and Active';
       case SceneKind.rainyReadingNook:
-        return 'Rainy reading nook';
+        return 'Rest and Reset';
     }
   }
 }
