@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/local/day_progress_store.dart';
 import '../../data/models/clue.dart';
 import '../../data/models/clue_selection.dart';
 import '../controllers/day_flow_controller.dart';
@@ -43,9 +44,69 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
       'directions.';
 
   @override
+  void initState() {
+    super.initState();
+    _restoreProgress();
+  }
+
+  @override
   void dispose() {
     _editController.dispose();
     super.dispose();
+  }
+
+  /// Loads today's in-progress/completed entry (if any) so reopening the app
+  /// resumes exactly where the user left off instead of restarting from the
+  /// welcome screen. A stored entry from a previous calendar day is ignored
+  /// by [DayProgressStore.load] — that's what gives the once-a-day gating.
+  Future<void> _restoreProgress() async {
+    final store = ref.read(dayProgressStoreProvider);
+    final stored = await store.load(todayDateKey());
+    if (!mounted || stored == null) return;
+
+    if (stored.selections.isNotEmpty) {
+      ref
+          .read(dayFlowControllerProvider.notifier)
+          .restoreSelections(stored.selections);
+    }
+
+    // 'intro'/'preparing' are transient — never resume directly into them.
+    final stage = switch (stored.stage) {
+      'moments' || 'reflection' || 'completed' => _JourneyPage.values.byName(
+        stored.stage,
+      ),
+      _ => stored.selections.isNotEmpty
+            ? _JourneyPage.moments
+            : _JourneyPage.welcome,
+    };
+
+    setState(() {
+      if (stored.reflection != null && stored.reflection!.isNotEmpty) {
+        _reflection = stored.reflection!;
+      }
+      if (stored.originalReflection != null &&
+          stored.originalReflection!.isNotEmpty) {
+        _originalReflection = stored.originalReflection!;
+      }
+      _editController.text = _reflection;
+      _page = stage;
+    });
+  }
+
+  /// Saves the current stage + selections + reflection so it survives an
+  /// app restart, scoped to today's date.
+  void _persistProgress() {
+    final store = ref.read(dayProgressStoreProvider);
+    final flow = ref.read(dayFlowControllerProvider);
+    store.save(
+      StoredDayProgress(
+        date: todayDateKey(),
+        stage: _page.name,
+        selections: flow.selections,
+        reflection: _reflection,
+        originalReflection: _originalReflection,
+      ),
+    );
   }
 
   void _go(_JourneyPage page) {
@@ -98,7 +159,9 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('You can save up to three moments.')),
       );
+      return;
     }
+    _persistProgress();
   }
 
   Future<void> _prepareReflection() async {
@@ -139,6 +202,7 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
       _editing = false;
       _page = _JourneyPage.reflection;
     });
+    _persistProgress();
   }
 
   void _beginEditing() {
@@ -162,6 +226,7 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
       if (edited.isNotEmpty) _reflection = edited;
       _editing = false;
     });
+    _persistProgress();
   }
 
   Future<void> _saveReflection() async {
@@ -182,6 +247,7 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
       _saving = false;
       _page = _JourneyPage.completed;
     });
+    _persistProgress();
   }
 
   @override
