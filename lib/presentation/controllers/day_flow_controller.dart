@@ -56,8 +56,8 @@ class DayFlowState {
 final dayFlowControllerProvider =
     NotifierProvider<DayFlowController, DayFlowState>(DayFlowController.new);
 
-/// Maximum clues a user may select per day. Also enforced server-side.
-const int kMaxSelectionsPerDay = 3;
+const int kMinSelectionsPerDay = 3;
+const int kMaxSelectionsPerDay = 5;
 
 class DayFlowController extends Notifier<DayFlowState> {
   // Mirrors state.selections/recentClueIds/hintLevel — kept as fields (not

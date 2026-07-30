@@ -113,6 +113,7 @@ class ActiveProfileController extends Notifier<ActiveProfile> {
     String? weather,
     String? sleepComparison,
     String? activityComparison,
+    double? screenTimeHours,
   }) {
     state = state.copyWith(
       context: state.context.copyWith(
@@ -123,6 +124,7 @@ class ActiveProfileController extends Notifier<ActiveProfile> {
         weather: weather,
         sleepComparison: sleepComparison,
         activityComparison: activityComparison,
+        screenTimeHours: screenTimeHours,
       ),
     );
   }

@@ -16,6 +16,8 @@ import '../models/clue_selection.dart';
 import '../models/daily_context.dart';
 import '../models/daily_entry.dart';
 import '../models/follow_up_question.dart';
+import '../models/health_week_day.dart';
+import '../models/health_week_insights.dart';
 import '../models/interpreted_signal.dart';
 import '../models/pattern_observation.dart';
 import '../models/reflection.dart';
@@ -69,7 +71,12 @@ class SeenRepositoryImpl implements SeenRepository {
     DailyContext context,
     List<InterpretedSignal> signals, {
     List<String> recentClueIds = const [],
-  }) => _scoringEngine.composeScene(ClueCatalog.all, signals, recentClueIds);
+  }) => _scoringEngine.composeScene(
+    context,
+    ClueCatalog.all,
+    signals,
+    recentClueIds,
+  );
 
   @override
   Future<FollowUpQuestion> followUpQuestion({
@@ -232,6 +239,50 @@ class SeenRepositoryImpl implements SeenRepository {
     }
     return _patternEngine.coOccurrence(historical, clueA, clueB);
   }
+
+  @override
+  Future<WeeklyInsights> weeklyInsights(List<HealthWeekDay> days) async {
+    if (_api.isConfigured) {
+      try {
+        final result = await _api.weeklyInsights(days);
+        _logSuccess('weeklyInsights');
+        return result;
+      } on Failure catch (e) {
+        _logFallback('weeklyInsights', '${e.runtimeType}: ${e.message}');
+        // fall through to local
+      }
+    } else {
+      _logFallback('weeklyInsights', 'backend not configured');
+    }
+    return _fallbackWeeklyInsights;
+  }
+
+  /// Same "not enough data" copy the AI itself is instructed to fall back to
+  /// when evidence is weak — kept in sync with the backend's own
+  /// `weeklyInsightsEngine.ts` fallback so offline/dev builds render
+  /// something coherent rather than something contradictory.
+  static const WeeklyInsights _fallbackWeeklyInsights = WeeklyInsights(
+    patternWorthNoticing: WeeklyPatternInsight(
+      title: 'A pattern worth noticing',
+      summary:
+          'Your reflections contain meaningful moments, but a consistent '
+          'connection has not emerged across this week yet.',
+      supportingDayCount: 0,
+      supportingDates: [],
+      signals: [],
+      commonClues: [],
+      confidence: 'low',
+    ),
+    whatMayBeHelping: WeeklyHelpingInsight(
+      title: '',
+      summary: '',
+      supportingReflectionCount: 0,
+      supportingDates: [],
+      signals: [],
+      confidence: 'low',
+    ),
+    themes: [],
+  );
 
   void _logSuccess(String method) {
     developer.log('$method -> backend call succeeded.', name: 'Backend');

@@ -6,6 +6,8 @@ import '../models/clue_selection.dart';
 import '../models/daily_context.dart';
 import '../models/daily_entry.dart';
 import '../models/follow_up_question.dart';
+import '../models/health_week_day.dart';
+import '../models/health_week_insights.dart';
 import '../models/interpreted_signal.dart';
 import '../models/pattern_observation.dart';
 import '../models/reflection.dart';
@@ -144,6 +146,15 @@ class SeenApi {
     return PatternObservation.fromJson(
       Map<String, dynamic>.from(res['observation'] as Map),
     );
+  }
+
+  Future<WeeklyInsights> weeklyInsights(List<HealthWeekDay> days) async {
+    final data = <String, dynamic>{'days': days.map((d) => d.toJson()).toList()};
+    final res = await _guard(
+      () =>
+          _client.dio.post<Map<String, dynamic>>('/week/insights', data: data),
+    );
+    return WeeklyInsights.fromJson(res);
   }
 
   Future<Map<String, dynamic>> health() =>

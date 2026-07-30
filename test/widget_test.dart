@@ -39,5 +39,55 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('0 moments found'), findsOneWidget);
+
+    final sceneImage = find.image(
+      const AssetImage('assets/cozy_purple_bedroom_retreat.png'),
+    );
+    expect(sceneImage, findsOneWidget);
+    final sceneSize = tester.getSize(sceneImage);
+    expect(sceneSize.width, 390);
+    expect(sceneSize.height, greaterThan(sceneSize.width));
+
+    final blanketTarget = find.bySemanticsLabel('Bed blanket');
+    expect(blanketTarget, findsOneWidget);
+    await tester.tap(blanketTarget);
+    await tester.pumpAndSettle();
+    expect(find.text('BED BLANKET'), findsOneWidget);
+    expect(
+      find.text('What did this bring to mind from your day?'),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Seen flow adapts to a short narrow screen without overflow', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 568);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(const ProviderScope(child: SeenApp()));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+
+    final explore = find.textContaining('Explore my day');
+    await tester.ensureVisible(explore);
+    await tester.tap(explore);
+    await tester.pumpAndSettle();
+    expect(find.text('YOUR SCENE IS READY'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    final enter = find.textContaining('Enter the scene');
+    await tester.ensureVisible(enter);
+    await tester.tap(enter);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.image(const AssetImage('assets/cozy_purple_bedroom_retreat.png')),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 }

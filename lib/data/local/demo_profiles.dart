@@ -21,6 +21,7 @@ class DemoProfiles {
       calendarLoad: 'high',
       weather: 'rain',
       locationPattern: 'mostly_home',
+      screenTimeHours: 5.2,
     ),
   );
 
@@ -38,6 +39,7 @@ class DemoProfiles {
       calendarLoad: 'low',
       weather: 'sunny',
       locationPattern: 'mostly_out',
+      screenTimeHours: 2.6,
     ),
   );
 
@@ -55,6 +57,7 @@ class DemoProfiles {
       calendarLoad: 'low',
       weather: 'cloudy',
       locationPattern: 'mostly_home',
+      screenTimeHours: 3.8,
     ),
   );
 
