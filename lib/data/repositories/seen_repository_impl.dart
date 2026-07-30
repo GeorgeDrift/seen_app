@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:uuid/uuid.dart';
 
 import '../../core/errors/failures.dart';
@@ -77,16 +79,20 @@ class SeenRepositoryImpl implements SeenRepository {
     String? previousMeaning,
   }) async {
     if (!_api.isConfigured) {
+      _logFallback('followUpQuestion', 'backend not configured');
       return FallbackQuestions.forCategory(clue.category);
     }
     try {
-      return await _api.followUpQuestion(
+      final result = await _api.followUpQuestion(
         clue: clue,
         context: context,
         interpretedSignals: interpretedSignals,
         previousMeaning: previousMeaning,
       );
-    } on Failure {
+      _logSuccess('followUpQuestion');
+      return result;
+    } on Failure catch (e) {
+      _logFallback('followUpQuestion', '${e.runtimeType}: ${e.message}');
       return FallbackQuestions.forCategory(clue.category);
     }
   }
@@ -100,16 +106,21 @@ class SeenRepositoryImpl implements SeenRepository {
   }) async {
     if (_api.isConfigured) {
       try {
-        return await _api.completeDay(
+        final result = await _api.completeDay(
           date: context.date,
           context: context,
           interpretedSignals: interpretedSignals,
           displayedClueIds: displayedClueIds,
           selectedClues: selectedClues,
         );
-      } on Failure {
+        _logSuccess('completeDay');
+        return result;
+      } on Failure catch (e) {
+        _logFallback('completeDay', '${e.runtimeType}: ${e.message}');
         // fall through to local
       }
+    } else {
+      _logFallback('completeDay', 'backend not configured');
     }
     return DailyEntry(
       id: _uuid.v4(),
@@ -130,14 +141,19 @@ class SeenRepositoryImpl implements SeenRepository {
   }) async {
     if (_api.isConfigured) {
       try {
-        return await _api.generateReflection(
+        final result = await _api.generateReflection(
           context: context,
           interpretedSignals: interpretedSignals,
           moments: moments,
         );
-      } on Failure {
+        _logSuccess('generateReflection');
+        return result;
+      } on Failure catch (e) {
+        _logFallback('generateReflection', '${e.runtimeType}: ${e.message}');
         // fall through to local
       }
+    } else {
+      _logFallback('generateReflection', 'backend not configured');
     }
     return _localReflection(moments);
   }
@@ -150,14 +166,19 @@ class SeenRepositoryImpl implements SeenRepository {
   }) async {
     if (_api.isConfigured) {
       try {
-        return await _api.refineReflection(
+        final result = await _api.refineReflection(
           originalReflection: originalReflection,
           moments: moments,
           steeringText: steeringText,
         );
-      } on Failure {
+        _logSuccess('refineReflection');
+        return result;
+      } on Failure catch (e) {
+        _logFallback('refineReflection', '${e.runtimeType}: ${e.message}');
         // fall through — keep the existing reflection unchanged
       }
+    } else {
+      _logFallback('refineReflection', 'backend not configured');
     }
     return Reflection(
       text: originalReflection,
@@ -199,11 +220,27 @@ class SeenRepositoryImpl implements SeenRepository {
   }) async {
     if (_api.isConfigured) {
       try {
-        return await _api.patterns(clueA: clueA, clueB: clueB);
-      } on Failure {
+        final result = await _api.patterns(clueA: clueA, clueB: clueB);
+        _logSuccess('coOccurrence');
+        return result;
+      } on Failure catch (e) {
+        _logFallback('coOccurrence', '${e.runtimeType}: ${e.message}');
         // fall through
       }
+    } else {
+      _logFallback('coOccurrence', 'backend not configured');
     }
     return _patternEngine.coOccurrence(historical, clueA, clueB);
+  }
+
+  void _logSuccess(String method) {
+    developer.log('$method -> backend call succeeded.', name: 'Backend');
+  }
+
+  void _logFallback(String method, String reason) {
+    developer.log(
+      '$method -> using LOCAL fallback ($reason).',
+      name: 'Backend',
+    );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:dio/dio.dart';
 
 import '../../core/config/api_config.dart';
@@ -29,6 +31,37 @@ class ApiClient {
         ),
       );
     }
+
+    // Every real network call (or the lack of one) shows up here, tagged
+    // "Backend" — this is the ground truth for whether the AI/backend is
+    // actually being hit, independent of what the repository decided to
+    // fall back to.
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          developer.log(
+            '-> ${options.method} ${options.uri.path}',
+            name: 'Backend',
+          );
+          handler.next(options);
+        },
+        onResponse: (response, handler) {
+          developer.log(
+            '<- ${response.statusCode} ${response.requestOptions.uri.path}',
+            name: 'Backend',
+          );
+          handler.next(response);
+        },
+        onError: (error, handler) {
+          developer.log(
+            '<- ERROR ${error.requestOptions.uri.path}: '
+            '${error.type} ${error.message ?? ''}',
+            name: 'Backend',
+          );
+          handler.next(error);
+        },
+      ),
+    );
   }
 
   final ApiConfig config;

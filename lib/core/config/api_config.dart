@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 /// Backend connection settings.
 ///
 /// Both values are provided at build/run time via `--dart-define` so that a
@@ -24,8 +26,19 @@ class ApiConfig {
     defaultValue: '',
   );
 
-  factory ApiConfig.fromEnvironment() =>
-      const ApiConfig(baseUrl: _baseUrl, functionKey: _functionKey);
+  factory ApiConfig.fromEnvironment() {
+    const config = ApiConfig(baseUrl: _baseUrl, functionKey: _functionKey);
+    developer.log(
+      config.isConfigured
+          ? 'Backend configured — baseUrl=$_baseUrl, functionKey=<${_functionKey.length} chars>. '
+                'AI calls (follow-up, reflection, day/complete) will hit the real backend.'
+          : 'Backend NOT configured (baseUrl or functionKey empty — build without '
+                '--dart-define=SEEN_API_BASE_URL=... --dart-define=SEEN_API_FUNCTION_KEY=... '
+                'was used). Every AI/backend call this session will silently use its local fallback.',
+      name: 'Backend',
+    );
+    return config;
+  }
 
   bool get isConfigured => baseUrl.isNotEmpty && functionKey.isNotEmpty;
 }
