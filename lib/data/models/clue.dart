@@ -84,6 +84,25 @@ class Clue {
   final String question; // local fallback question if AI unavailable
   final List<String> options; // local fallback options
 
+  Clue copyWithPosition({required double x, required double y}) => Clue(
+    id: id,
+    title: title,
+    category: category,
+    signalTags: signalTags,
+    possibleMeanings: possibleMeanings,
+    clueType: clueType,
+    baseWeight: baseWeight,
+    recentRepeatPenalty: recentRepeatPenalty,
+    x: x,
+    y: y,
+    icon: icon,
+    question: question,
+    options: options,
+    assetPath: assetPath,
+    compatibleBackgrounds: compatibleBackgrounds,
+    compatibleSlots: compatibleSlots,
+  );
+
   /// The full JSON body the backend's `/follow-up-question` endpoint expects
   /// under `clue`. Frontend-only fields are intentionally omitted.
   Map<String, dynamic> toJson() => {

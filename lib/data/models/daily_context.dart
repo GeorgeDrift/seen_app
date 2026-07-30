@@ -14,6 +14,7 @@ class DailyContext {
     required this.calendarLoad,
     required this.weather,
     this.locationPattern = 'mostly_home',
+    this.screenTimeHours,
   });
 
   final String date;
@@ -26,6 +27,7 @@ class DailyContext {
   final String weather; // 'sunny' | 'cloudy' | 'rain' | 'snow' | 'hot' | 'cold'
   final String
   locationPattern; // 'mostly_home' | 'mostly_out' | 'mixed' | 'unknown'
+  final double? screenTimeHours;
 
   DailyContext copyWith({
     String? date,
@@ -37,6 +39,7 @@ class DailyContext {
     String? calendarLoad,
     String? weather,
     String? locationPattern,
+    double? screenTimeHours,
   }) {
     return DailyContext(
       date: date ?? this.date,
@@ -48,6 +51,7 @@ class DailyContext {
       calendarLoad: calendarLoad ?? this.calendarLoad,
       weather: weather ?? this.weather,
       locationPattern: locationPattern ?? this.locationPattern,
+      screenTimeHours: screenTimeHours ?? this.screenTimeHours,
     );
   }
 
@@ -61,6 +65,7 @@ class DailyContext {
     calendarLoad: json['calendarLoad'] as String? ?? 'low',
     weather: json['weather'] as String? ?? 'cloudy',
     locationPattern: json['locationPattern'] as String? ?? 'unknown',
+    screenTimeHours: (json['screenTimeHours'] as num?)?.toDouble(),
   );
 
   Map<String, dynamic> toJson() => {
@@ -73,5 +78,6 @@ class DailyContext {
     'calendarLoad': calendarLoad,
     'weather': weather,
     'locationPattern': locationPattern,
+    'screenTimeHours': screenTimeHours,
   };
 }
