@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/local/day_progress_store.dart';
 import '../../data/models/clue_selection.dart';
 import '../../data/models/daily_context.dart';
 import '../../data/models/interpreted_signal.dart';
@@ -59,13 +60,32 @@ final dayFlowControllerProvider =
 const int kMaxSelectionsPerDay = 3;
 
 class DayFlowController extends Notifier<DayFlowState> {
-  static const List<String> _recentClueIds = <String>[];
+  // Mirrors state.selections/recentClueIds/hintLevel — kept as fields (not
+  // read off `state`) so build() can carry them across a profile refresh
+  // (e.g. passive data arriving) without a round-trip through `state`, which
+  // isn't set yet on the very first build().
+  List<ClueSelection> _selections = const [];
+  List<String> _recentClueIds = const [];
+  int _hintLevel = 0;
+  String? _lastDate;
 
   @override
   DayFlowState build() {
     // React to profile changes automatically.
     final profile = ref.watch(activeProfileProvider);
     final repo = ref.watch(seenRepositoryProvider);
+
+    // Only reset selections/hint on an actual day change (or first-ever
+    // build) — NOT every time the profile refreshes (e.g. passive data
+    // resolving after moments have already been picked), which used to
+    // silently wipe the user's in-progress selections mid-session.
+    final today = todayDateKey();
+    if (_lastDate != today) {
+      _lastDate = today;
+      _selections = const [];
+      _recentClueIds = const [];
+      _hintLevel = 0;
+    }
 
     final signals = repo.interpretSignals(profile.context);
     final scene = repo.composeScene(
@@ -74,14 +94,13 @@ class DayFlowController extends Notifier<DayFlowState> {
       recentClueIds: _recentClueIds,
     );
 
-    // Selections and hint reset when the profile changes.
     return DayFlowState(
       context: profile.context,
       signals: signals,
       scene: scene,
-      selections: const [],
+      selections: _selections,
       recentClueIds: _recentClueIds,
-      hintLevel: 0,
+      hintLevel: _hintLevel,
     );
   }
 
@@ -94,22 +113,33 @@ class DayFlowController extends Notifier<DayFlowState> {
     if (existing >= 0) {
       final next = [...state.selections];
       next[existing] = selection;
+      _selections = next;
       state = state.copyWith(selections: next);
       return true;
     }
     if (state.selections.length >= kMaxSelectionsPerDay) return false;
-    state = state.copyWith(selections: [...state.selections, selection]);
+    final next = [...state.selections, selection];
+    _selections = next;
+    state = state.copyWith(selections: next);
     return true;
   }
 
   void removeSelection(String clueId) {
-    state = state.copyWith(
-      selections: state.selections.where((s) => s.clueId != clueId).toList(),
-    );
+    final next = state.selections.where((s) => s.clueId != clueId).toList();
+    _selections = next;
+    state = state.copyWith(selections: next);
   }
 
   void clearSelections() {
+    _selections = const [];
     state = state.copyWith(selections: const []);
+  }
+
+  /// Restores selections previously saved to disk (same calendar day only —
+  /// callers are expected to have already checked the stored date).
+  void restoreSelections(List<ClueSelection> selections) {
+    _selections = selections;
+    state = state.copyWith(selections: selections);
   }
 
   /// Advance the 0→1→2→0 hint cycle.

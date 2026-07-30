@@ -46,4 +46,29 @@ class ClueSelection {
     'answerOption': answerOption,
     'confidence': confidence,
   };
+
+  /// Local-storage round-trip (includes [clueTitle], unlike [toJson] which
+  /// matches the backend's request contract exactly and must not gain
+  /// fields it doesn't expect).
+  Map<String, dynamic> toLocalJson() => {
+    'clueId': clueId,
+    'clueTitle': clueTitle,
+    'selectedAt': selectedAt.toIso8601String(),
+    'dailyContextDate': dailyContextDate,
+    'userMeaning': userMeaning,
+    'followUpQuestion': followUpQuestion,
+    'answerOption': answerOption,
+    'confidence': confidence,
+  };
+
+  factory ClueSelection.fromJson(Map<String, dynamic> json) => ClueSelection(
+    clueId: json['clueId'] as String,
+    clueTitle: json['clueTitle'] as String? ?? '',
+    selectedAt: DateTime.parse(json['selectedAt'] as String),
+    dailyContextDate: json['dailyContextDate'] as String,
+    userMeaning: json['userMeaning'] as String?,
+    followUpQuestion: json['followUpQuestion'] as String?,
+    answerOption: json['answerOption'] as String?,
+    confidence: json['confidence'] as String? ?? 'clear',
+  );
 }

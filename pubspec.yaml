@@ -25,6 +25,9 @@ dependencies:
   device_calendar: ^4.3.3
   geolocator: ^14.0.2
 
+  # Persists today's in-progress/completed entry across app restarts.
+  shared_preferences: ^2.3.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
