@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -319,28 +320,37 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
           decoration: BoxDecoration(
             color: isDark ? const Color(0xff0d0816) : _surface,
           ),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: _phoneCanvasWidth),
-              child: SizedBox.expand(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 360),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  transitionBuilder: (child, animation) => FadeTransition(
-                    opacity: animation,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0.025, 0),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: child,
-                    ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final content = AnimatedSwitcher(
+                duration: const Duration(milliseconds: 360),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.025, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
                   ),
-                  child: screen,
                 ),
-              ),
-            ),
+                child: screen,
+              );
+
+              if (kIsWeb && constraints.maxWidth >= 700) {
+                return Center(
+                  child: SizedBox(
+                    width: _phoneCanvasWidth,
+                    height: constraints.maxHeight,
+                    child: content,
+                  ),
+                );
+              }
+
+              return SizedBox.expand(child: content);
+            },
           ),
         ),
       ),

@@ -90,4 +90,19 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+  testWidgets('native wide devices use the full viewport without gutters', (
+    WidgetTester tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 1000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(const ProviderScope(child: SeenApp()));
+    await tester.pumpAndSettle();
+
+    final rootSwitcher = find.byType(AnimatedSwitcher).first;
+    expect(tester.getSize(rootSwitcher).width, 800);
+    expect(tester.takeException(), isNull);
+  });
 }
