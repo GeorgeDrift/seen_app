@@ -15,7 +15,7 @@ class ClueCatalog {
     // ── Signal-Informed Clues ────────────────────────────────
     Clue(
       id: 'restless_night_01',
-      title: 'Restless Night',
+      title: 'Blanket',
       category: 'sleep',
       signalTags: const ['short_sleep'],
       possibleMeanings: const [
@@ -30,7 +30,7 @@ class ClueCatalog {
       x: 0.27,
       y: 0.45,
       icon: Icons.bedtime,
-      question: 'You logged short sleep today. How did this impact your state?',
+      question: 'What did the blanket bring to mind from your day?',
       options: const [
         'Lower energy',
         'Harder to focus',
@@ -40,7 +40,7 @@ class ClueCatalog {
     ),
     Clue(
       id: 'meeting_overload_01',
-      title: 'Meeting Overload',
+      title: 'Calendar',
       category: 'workload',
       signalTags: const ['high_calendar_load'],
       possibleMeanings: const [
@@ -55,12 +55,12 @@ class ClueCatalog {
       x: 0.87,
       y: 0.49,
       icon: Icons.calendar_month,
-      question: 'Your schedule was packed today. How did managing this feel?',
+      question: 'What did the calendar bring to mind from your day?',
       options: const ['Manageable', 'Energizing', 'Draining', 'Not sure'],
     ),
     Clue(
       id: 'desk_stillness_01',
-      title: 'Quiet Nightstand',
+      title: 'Chair',
       category: 'movement',
       signalTags: const ['low_activity'],
       possibleMeanings: const [
@@ -75,7 +75,7 @@ class ClueCatalog {
       x: 0.18,
       y: 0.58,
       icon: Icons.chair,
-      question: 'With low movement today, what was behind staying seated?',
+      question: 'What did the chair bring to mind from your day?',
       options: const [
         'Deep focus session',
         'Felt physically trapped',
@@ -85,7 +85,7 @@ class ClueCatalog {
     ),
     Clue(
       id: 'rain_window_01',
-      title: 'Window at Night',
+      title: 'Window',
       category: 'environment',
       signalTags: const ['rainy_environment'],
       possibleMeanings: const [
@@ -100,7 +100,7 @@ class ClueCatalog {
       x: 0.49,
       y: 0.20,
       icon: Icons.opacity,
-      question: 'It rained today. How did the grey weather feel to you?',
+      question: 'What did the window bring to mind from your day?',
       options: const [
         'Cozy atmosphere',
         'Dampened my mood',
@@ -112,7 +112,7 @@ class ClueCatalog {
     // ── Possible Explanations ─────────────────────────────────
     Clue(
       id: 'quiet_corner_01',
-      title: 'Quiet Corner',
+      title: 'Laundry Basket',
       category: 'recovery',
       signalTags: const ['high_calendar_load', 'short_sleep', 'low_activity'],
       possibleMeanings: const [
@@ -127,8 +127,7 @@ class ClueCatalog {
       x: 0.15,
       y: 0.87,
       icon: Icons.deck,
-      question:
-          'You selected Quiet Corner. What did this moment give you today?',
+      question: 'What did the laundry basket bring to mind from your day?',
       options: const [
         'Restorative solitude',
         'Sensory recovery',
@@ -165,7 +164,7 @@ class ClueCatalog {
     // ── Helpful / Restorative Clues ───────────────────────────
     Clue(
       id: 'walking_shoes_01',
-      title: 'Coat by the Door',
+      title: 'Slippers',
       category: 'movement',
       signalTags: const ['high_activity', 'sunny_environment'],
       possibleMeanings: const [
@@ -180,7 +179,7 @@ class ClueCatalog {
       x: 0.13,
       y: 0.30,
       icon: Icons.directions_run,
-      question: 'You clocked high movement today. What motivated you to move?',
+      question: 'What did the slippers bring to mind from your day?',
       options: const [
         'Workout to clear head',
         'Active transit',
@@ -303,6 +302,96 @@ class ClueCatalog {
       icon: Icons.local_drink,
       question: 'You tapped the Water Bottle. What did this represent?',
       options: const ['Staying hydrated', 'Ordinary daily item', 'Not sure'],
+    ),
+    Clue(
+      id: 'notebook_01',
+      title: 'Notebook',
+      category: 'neutral',
+      signalTags: const [],
+      possibleMeanings: const ['A task', 'An idea', 'A memory', 'Not sure'],
+      clueType: ClueType.neutralDistractor,
+      baseWeight: 0.4,
+      recentRepeatPenalty: 0.05,
+      x: 0.43,
+      y: 0.72,
+      icon: Icons.menu_book_outlined,
+      question: 'What did the notebook bring to mind from your day?',
+      options: const ['A task', 'An idea', 'A memory', 'Not sure'],
+    ),
+    Clue(
+      id: 'pen_01',
+      title: 'Pen',
+      category: 'neutral',
+      signalTags: const [],
+      possibleMeanings: const ['Writing', 'Planning', 'A small detail', 'Not sure'],
+      clueType: ClueType.neutralDistractor,
+      baseWeight: 0.4,
+      recentRepeatPenalty: 0.05,
+      x: 0.51,
+      y: 0.76,
+      icon: Icons.edit_outlined,
+      question: 'What did the pen bring to mind from your day?',
+      options: const ['Writing', 'Planning', 'A small detail', 'Not sure'],
+    ),
+    Clue(
+      id: 'fruit_bowl_01',
+      title: 'Fruit Bowl',
+      category: 'neutral',
+      signalTags: const [],
+      possibleMeanings: const ['A meal', 'A break', 'Home', 'Not sure'],
+      clueType: ClueType.neutralDistractor,
+      baseWeight: 0.4,
+      recentRepeatPenalty: 0.05,
+      x: 0.31,
+      y: 0.62,
+      icon: Icons.eco_outlined,
+      question: 'What did the fruit bowl bring to mind from your day?',
+      options: const ['A meal', 'A break', 'Home', 'Not sure'],
+    ),
+    Clue(
+      id: 'dishes_01',
+      title: 'Stacked Dishes',
+      category: 'neutral',
+      signalTags: const [],
+      possibleMeanings: const ['A meal', 'A chore', 'A shared moment', 'Not sure'],
+      clueType: ClueType.neutralDistractor,
+      baseWeight: 0.4,
+      recentRepeatPenalty: 0.05,
+      x: 0.72,
+      y: 0.85,
+      icon: Icons.dining_outlined,
+      question: 'What did the dishes bring to mind from your day?',
+      options: const ['A meal', 'A chore', 'A shared moment', 'Not sure'],
+    ),
+    Clue(
+      id: 'laptop_01',
+      title: 'Laptop',
+      category: 'neutral',
+      signalTags: const [],
+      possibleMeanings: const ['Work', 'Learning', 'A conversation', 'Not sure'],
+      clueType: ClueType.neutralDistractor,
+      baseWeight: 0.4,
+      recentRepeatPenalty: 0.05,
+      x: 0.85,
+      y: 0.38,
+      icon: Icons.laptop_mac,
+      question: 'What did the laptop bring to mind from your day?',
+      options: const ['Work', 'Learning', 'A conversation', 'Not sure'],
+    ),
+    Clue(
+      id: 'yoga_mat_01',
+      title: 'Yoga Mat',
+      category: 'neutral',
+      signalTags: const [],
+      possibleMeanings: const ['Movement', 'Rest', 'A routine', 'Not sure'],
+      clueType: ClueType.neutralDistractor,
+      baseWeight: 0.4,
+      recentRepeatPenalty: 0.05,
+      x: 0.58,
+      y: 0.61,
+      icon: Icons.self_improvement,
+      question: 'What did the yoga mat bring to mind from your day?',
+      options: const ['Movement', 'Rest', 'A routine', 'Not sure'],
     ),
   ];
 

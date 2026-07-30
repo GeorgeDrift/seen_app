@@ -67,7 +67,12 @@ class SeenRepositoryImpl implements SeenRepository {
     DailyContext context,
     List<InterpretedSignal> signals, {
     List<String> recentClueIds = const [],
-  }) => _scoringEngine.composeScene(ClueCatalog.all, signals, recentClueIds);
+  }) => _scoringEngine.composeScene(
+    context,
+    ClueCatalog.all,
+    signals,
+    recentClueIds,
+  );
 
   @override
   Future<FollowUpQuestion> followUpQuestion({
