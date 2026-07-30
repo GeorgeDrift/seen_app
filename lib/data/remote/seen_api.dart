@@ -8,6 +8,7 @@ import '../models/daily_entry.dart';
 import '../models/follow_up_question.dart';
 import '../models/interpreted_signal.dart';
 import '../models/pattern_observation.dart';
+import '../models/reflection.dart';
 import 'api_client.dart';
 
 /// Typed wrapper around the backend HTTP surface.
@@ -33,12 +34,15 @@ class SeenApi {
     final data = <String, dynamic>{
       'clue': clue.toJson(),
       'context': context.toJson(),
-      'interpretedSignals':
-          interpretedSignals.map((s) => s.toJson()).toList(),
+      'interpretedSignals': interpretedSignals.map((s) => s.toJson()).toList(),
       'previousMeaning': ?previousMeaning,
     };
-    final res = await _guard(() =>
-        _client.dio.post<Map<String, dynamic>>('/follow-up-question', data: data));
+    final res = await _guard(
+      () => _client.dio.post<Map<String, dynamic>>(
+        '/follow-up-question',
+        data: data,
+      ),
+    );
     return FollowUpQuestion.fromJson(res);
   }
 
@@ -52,13 +56,13 @@ class SeenApi {
     final data = <String, dynamic>{
       'date': date,
       'context': context.toJson(),
-      'interpretedSignals':
-          interpretedSignals.map((s) => s.toJson()).toList(),
+      'interpretedSignals': interpretedSignals.map((s) => s.toJson()).toList(),
       'displayedClueIds': displayedClueIds,
       'selectedClues': selectedClues.map((s) => s.toJson()).toList(),
     };
-    final res = await _guard(() =>
-        _client.dio.post<Map<String, dynamic>>('/day/complete', data: data));
+    final res = await _guard(
+      () => _client.dio.post<Map<String, dynamic>>('/day/complete', data: data),
+    );
 
     // The backend returns the saved DailyEntry, but with only the *backend*
     // Clue view (no icon/x/y/etc). We re-hydrate what the frontend needs
@@ -69,15 +73,61 @@ class SeenApi {
       id: res['id'] as String,
       date: res['date'] as String,
       context: DailyContext.fromJson(
-          Map<String, dynamic>.from(res['context'] as Map)),
+        Map<String, dynamic>.from(res['context'] as Map),
+      ),
       interpretedSignals: (res['interpretedSignals'] as List)
           .cast<Map>()
           .map((m) => InterpretedSignal.fromJson(Map<String, dynamic>.from(m)))
           .toList(),
-      displayedClueIds:
-          (res['displayedClueIds'] as List).map((e) => e.toString()).toList(),
+      displayedClueIds: (res['displayedClueIds'] as List)
+          .map((e) => e.toString())
+          .toList(),
       selectedClues: selectedClues, // frontend-local (has clueTitle etc.)
       generatedSummary: res['generatedSummary'] as String? ?? '',
+    );
+  }
+
+  Future<Reflection> generateReflection({
+    required DailyContext context,
+    required List<InterpretedSignal> interpretedSignals,
+    required List<Map<String, String>> moments,
+  }) async {
+    final data = <String, dynamic>{
+      'context': context.toJson(),
+      'interpretedSignals': interpretedSignals.map((s) => s.toJson()).toList(),
+      'moments': moments,
+    };
+    final res = await _guard(
+      () =>
+          _client.dio.post<Map<String, dynamic>>('/day/reflection', data: data),
+    );
+    return Reflection(
+      text: res['reflection'] as String,
+      generatedAt: DateTime.now(),
+      isEdited: false,
+    );
+  }
+
+  Future<Reflection> refineReflection({
+    required String originalReflection,
+    required List<Map<String, String>> moments,
+    required String steeringText,
+  }) async {
+    final data = <String, dynamic>{
+      'originalReflection': originalReflection,
+      'moments': moments,
+      'steeringText': steeringText,
+    };
+    final res = await _guard(
+      () => _client.dio.post<Map<String, dynamic>>(
+        '/day/reflection/refine',
+        data: data,
+      ),
+    );
+    return Reflection(
+      text: res['reflection'] as String,
+      generatedAt: DateTime.now(),
+      isEdited: true,
     );
   }
 
@@ -85,19 +135,23 @@ class SeenApi {
     required String clueA,
     required String clueB,
   }) async {
-    final res = await _guard(() => _client.dio.get<Map<String, dynamic>>(
-          '/patterns',
-          queryParameters: {'clueA': clueA, 'clueB': clueB},
-        ));
+    final res = await _guard(
+      () => _client.dio.get<Map<String, dynamic>>(
+        '/patterns',
+        queryParameters: {'clueA': clueA, 'clueB': clueB},
+      ),
+    );
     return PatternObservation.fromJson(
-        Map<String, dynamic>.from(res['observation'] as Map));
+      Map<String, dynamic>.from(res['observation'] as Map),
+    );
   }
 
   Future<Map<String, dynamic>> health() =>
       _guard(() => _client.dio.get<Map<String, dynamic>>('/health'));
 
   Future<T> _guard<T extends Object>(
-      Future<Response<T>> Function() request) async {
+    Future<Response<T>> Function() request,
+  ) async {
     try {
       final res = await request();
       final body = res.data;
@@ -122,7 +176,8 @@ class SeenApi {
         final code = e.response?.statusCode;
         if (code == 401 || code == 403) {
           return UnauthorizedFailure(
-              'Backend rejected request (${code ?? '??'}). Function key wrong or missing?');
+            'Backend rejected request (${code ?? '??'}). Function key wrong or missing?',
+          );
         }
         return ServerFailure(
           e.response?.statusMessage ?? 'Backend returned an error.',

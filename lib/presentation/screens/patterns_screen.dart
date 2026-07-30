@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../controllers/historical_entries_controller.dart';
 
-/// Screen 4 — 14-day co-occurrence patterns + a preview of the recent
-/// entries. Pure consumer widget: no compute, no HTTP.
+/// 14-day co-occurrence patterns + a preview of recent entries. Pure
+/// consumer widget: no compute, no HTTP.
 class PatternsScreen extends ConsumerWidget {
   const PatternsScreen({super.key});
 
@@ -15,85 +15,20 @@ class PatternsScreen extends ConsumerWidget {
     final history = ref.watch(historicalEntriesProvider);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.lavender.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color: AppColors.lavender.withValues(alpha: 0.3)),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.auto_graph,
-                    size: 14, color: AppColors.lavender),
-                SizedBox(width: 6),
-                Text(
-                  'SCREEN 4: LONGITUDINAL PATTERN SUMMARY (14-DAY WINDOW)',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.0,
-                    color: AppColors.lavender,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
           Text(
-            'Transparent Behavioral Patterns',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                ),
+            'Your patterns.',
+            style: Theme.of(context).textTheme.displayLarge,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
-            'Calculated from your 14-day self-annotated history. The system highlights co-occurrences without assuming cause and effect.',
-            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+            'Calculated from your 14-day self-annotated history. This highlights co-occurrences without assuming cause and effect.',
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
           const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(10),
-              border:
-                  Border.all(color: Colors.white.withValues(alpha: 0.08)),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.check_circle_outline,
-                    color: AppColors.sage, size: 16),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    "Transparent Language Rule: Describes associations only (e.g. 'X and Y appeared together'), never claims clinical causation.",
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.sage,
-                        fontWeight: FontWeight.w500),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Observed Co-occurrence Patterns:',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(fontSize: 15, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -101,22 +36,18 @@ class PatternsScreen extends ConsumerWidget {
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final p = patterns[index];
-              return GlassContainer(
+              return SoftCard(
                 padding: const EdgeInsets.all(16),
-                borderRadius: 16,
-                border:
-                    Border.all(color: p.color.withValues(alpha: 0.2)),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: p.color.withValues(alpha: 0.12),
+                        color: p.color.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.hub_outlined,
-                          color: p.color, size: 20),
+                      child: Icon(Icons.hub_outlined, color: p.color, size: 20),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -124,29 +55,32 @@ class PatternsScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                p.title,
-                                style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white),
+                              Expanded(
+                                child: Text(
+                                  p.title,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
                               ),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: p.color.withValues(alpha: 0.12),
+                                  color: p.color.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  '${(p.ratio * 100).toStringAsFixed(0)}% co-occurrence',
+                                  '${(p.ratio * 100).toStringAsFixed(0)}%',
                                   style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: p.color),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: p.color,
+                                  ),
                                 ),
                               ),
                             ],
@@ -154,18 +88,14 @@ class PatternsScreen extends ConsumerWidget {
                           const SizedBox(height: 6),
                           Text(
                             p.description,
-                            style: TextStyle(
-                                fontSize: 12.5,
-                                color: Colors.grey[300],
-                                height: 1.35),
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: 10),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(3),
                             child: LinearProgressIndicator(
                               value: p.ratio,
-                              backgroundColor:
-                                  Colors.white.withValues(alpha: 0.06),
+                              backgroundColor: AppColors.divider,
                               color: p.color,
                               minHeight: 5,
                             ),
@@ -180,11 +110,8 @@ class PatternsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 28),
           Text(
-            '14-Day Synthetic Entry Records (${history.length} days):',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(fontSize: 15, fontWeight: FontWeight.bold),
+            'Recent entries (${history.length} days)',
+            style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),
           ListView.builder(
@@ -196,34 +123,26 @@ class PatternsScreen extends ConsumerWidget {
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 10),
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.02),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.05)),
+                  color: AppColors.cardCool,
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.event_note,
-                            size: 14, color: AppColors.textSecondary),
-                        const SizedBox(width: 8),
-                        Text(
-                          entry.date,
-                          style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
-                        ),
-                      ],
+                    Text(
+                      entry.date,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                     Text(
                       '${entry.context.sleepHours ?? "--"}h sleep • ${entry.context.steps} steps • ${entry.context.weather}',
-                      style: const TextStyle(
-                          fontSize: 11, color: AppColors.textSecondary),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   ],
                 ),

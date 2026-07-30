@@ -9,38 +9,52 @@ import '../../data/models/demo_profile.dart';
 /// update the context but keep the label so the UI can still say
 /// "Profile A (Overloaded)" as a starting point.
 class ActiveProfile {
-  const ActiveProfile({required this.label, required this.context});
+  const ActiveProfile({
+    required this.key,
+    required this.label,
+    required this.context,
+  });
+  final DemoProfileKey key;
   final String label;
   final DailyContext context;
 
-  ActiveProfile copyWith({String? label, DailyContext? context}) =>
-      ActiveProfile(
-        label: label ?? this.label,
-        context: context ?? this.context,
-      );
+  ActiveProfile copyWith({
+    DemoProfileKey? key,
+    String? label,
+    DailyContext? context,
+  }) => ActiveProfile(
+    key: key ?? this.key,
+    label: label ?? this.label,
+    context: context ?? this.context,
+  );
 }
 
 final activeProfileProvider =
     NotifierProvider<ActiveProfileController, ActiveProfile>(
-        ActiveProfileController.new);
+      ActiveProfileController.new,
+    );
 
 class ActiveProfileController extends Notifier<ActiveProfile> {
   @override
   ActiveProfile build() {
     final first = DemoProfiles.all.first;
-    return ActiveProfile(label: first.label, context: first.context);
+    return ActiveProfile(
+      key: first.key,
+      label: first.label,
+      context: first.context,
+    );
   }
 
   /// Switch to one of the three canned demo profiles by label.
   void selectByLabel(String label) {
     final p = DemoProfiles.byLabel(label);
-    state = ActiveProfile(label: p.label, context: p.context);
+    state = ActiveProfile(key: p.key, label: p.label, context: p.context);
   }
 
   /// Switch to one of the three canned demo profiles by key.
   void selectByKey(DemoProfileKey key) {
     final p = DemoProfiles.byKey(key);
-    state = ActiveProfile(label: p.label, context: p.context);
+    state = ActiveProfile(key: p.key, label: p.label, context: p.context);
   }
 
   /// Ad-hoc tweak of the current context. Used by the telemetry simulator.

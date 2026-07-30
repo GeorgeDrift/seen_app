@@ -31,10 +31,10 @@ class FollowUpQuestion {
       );
 
   Map<String, dynamic> toJson() => {
-        'question': question,
-        'answerType': answerType,
-        'options': options,
-        'purpose': purpose,
-        'safetyCheck': safetyCheck,
-      };
+    'question': question,
+    'answerType': answerType,
+    'options': options,
+    'purpose': purpose,
+    'safetyCheck': safetyCheck,
+  };
 }

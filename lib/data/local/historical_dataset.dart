@@ -16,10 +16,10 @@ class HistoricalDataset {
     SummaryEngine? summaryEngine,
     Uuid? uuid,
     DateTime? anchorDate,
-  })  : _signalEngine = signalEngine ?? const SignalEngine(),
-        _summaryEngine = summaryEngine ?? const SummaryEngine(),
-        _uuid = uuid ?? const Uuid(),
-        _anchorDate = anchorDate ?? DateTime(2026, 7, 29);
+  }) : _signalEngine = signalEngine ?? const SignalEngine(),
+       _summaryEngine = summaryEngine ?? const SummaryEngine(),
+       _uuid = uuid ?? const Uuid(),
+       _anchorDate = anchorDate ?? DateTime(2026, 7, 29);
 
   final SignalEngine _signalEngine;
   final SummaryEngine _summaryEngine;
@@ -47,68 +47,76 @@ class HistoricalDataset {
               weather: 'rain',
             )
           : (isActive
-              ? DailyContext(
-                  date: dateStr,
-                  sleepHours: 7.6,
-                  sleepComparison: 'typical',
-                  steps: 9800,
-                  activityComparison: 'higher',
-                  calendarEventCount: 2,
-                  calendarLoad: 'low',
-                  weather: 'sunny',
-                )
-              : DailyContext(
-                  date: dateStr,
-                  sleepHours: 8.2,
-                  sleepComparison: 'typical',
-                  steps: 3400,
-                  activityComparison: 'lower',
-                  calendarEventCount: 1,
-                  calendarLoad: 'low',
-                  weather: 'cloudy',
-                ));
+                ? DailyContext(
+                    date: dateStr,
+                    sleepHours: 7.6,
+                    sleepComparison: 'typical',
+                    steps: 9800,
+                    activityComparison: 'higher',
+                    calendarEventCount: 2,
+                    calendarLoad: 'low',
+                    weather: 'sunny',
+                  )
+                : DailyContext(
+                    date: dateStr,
+                    sleepHours: 8.2,
+                    sleepComparison: 'typical',
+                    steps: 3400,
+                    activityComparison: 'lower',
+                    calendarEventCount: 1,
+                    calendarLoad: 'low',
+                    weather: 'cloudy',
+                  ));
 
       final signals = _signalEngine.interpret(ctx);
       final selections = <ClueSelection>[];
 
       if (isOverloaded) {
-        selections.add(ClueSelection(
-          clueId: 'quiet_corner_01',
-          clueTitle: 'Quiet Corner',
-          selectedAt: dt,
-          dailyContextDate: dateStr,
-          userMeaning: 'Restorative solitude',
-        ));
-        selections.add(ClueSelection(
-          clueId: 'meeting_overload_01',
-          clueTitle: 'Meeting Overload',
-          selectedAt: dt,
-          dailyContextDate: dateStr,
-          userMeaning: 'Draining',
-        ));
+        selections.add(
+          ClueSelection(
+            clueId: 'quiet_corner_01',
+            clueTitle: 'Quiet Corner',
+            selectedAt: dt,
+            dailyContextDate: dateStr,
+            userMeaning: 'Restorative solitude',
+          ),
+        );
+        selections.add(
+          ClueSelection(
+            clueId: 'meeting_overload_01',
+            clueTitle: 'Meeting Overload',
+            selectedAt: dt,
+            dailyContextDate: dateStr,
+            userMeaning: 'Draining',
+          ),
+        );
       } else if (isActive) {
-        selections.add(ClueSelection(
-          clueId: 'walking_shoes_01',
-          clueTitle: 'Walking Shoes',
-          selectedAt: dt,
-          dailyContextDate: dateStr,
-          userMeaning: 'Workout to clear head',
-        ));
+        selections.add(
+          ClueSelection(
+            clueId: 'walking_shoes_01',
+            clueTitle: 'Walking Shoes',
+            selectedAt: dt,
+            dailyContextDate: dateStr,
+            userMeaning: 'Workout to clear head',
+          ),
+        );
       }
 
-      entries.add(DailyEntry(
-        id: _uuid.v4(),
-        date: dateStr,
-        context: ctx,
-        interpretedSignals: signals,
-        displayedClueIds: const [
-          'quiet_corner_01',
-          'meeting_overload_01',
-          'walking_shoes_01',
-        ],
-        selectedClues: selections,
-        generatedSummary: _summaryEngine.buildLocal(selections),
-      ));
+      entries.add(
+        DailyEntry(
+          id: _uuid.v4(),
+          date: dateStr,
+          context: ctx,
+          interpretedSignals: signals,
+          displayedClueIds: const [
+            'quiet_corner_01',
+            'meeting_overload_01',
+            'walking_shoes_01',
+          ],
+          selectedClues: selections,
+          generatedSummary: _summaryEngine.buildLocal(selections),
+        ),
+      );
     }
     return entries;
   }

@@ -22,7 +22,7 @@ class ClueCatalog {
         'Lower energy',
         'Harder to focus',
         'Did not affect me',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.signalInformed,
       baseWeight: 0.8,
@@ -35,7 +35,7 @@ class ClueCatalog {
         'Lower energy',
         'Harder to focus',
         'Did not affect me',
-        'Not sure'
+        'Not sure',
       ],
     ),
     Clue(
@@ -47,7 +47,7 @@ class ClueCatalog {
         'Manageable',
         'Energizing',
         'Draining',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.signalInformed,
       baseWeight: 0.85,
@@ -55,8 +55,7 @@ class ClueCatalog {
       x: 0.40,
       y: 0.45,
       icon: Icons.calendar_month,
-      question:
-          'Your schedule was packed today. How did managing this feel?',
+      question: 'Your schedule was packed today. How did managing this feel?',
       options: const ['Manageable', 'Energizing', 'Draining', 'Not sure'],
     ),
     Clue(
@@ -68,7 +67,7 @@ class ClueCatalog {
         'Deep focus session',
         'Felt physically trapped',
         'Chose recovery',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.signalInformed,
       baseWeight: 0.75,
@@ -81,7 +80,7 @@ class ClueCatalog {
         'Deep focus session',
         'Felt physically trapped',
         'Chose recovery',
-        'Not sure'
+        'Not sure',
       ],
     ),
     Clue(
@@ -93,7 +92,7 @@ class ClueCatalog {
         'Cozy atmosphere',
         'Dampened my mood',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.signalInformed,
       baseWeight: 0.7,
@@ -106,7 +105,7 @@ class ClueCatalog {
         'Cozy atmosphere',
         'Dampened my mood',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
     ),
 
@@ -115,16 +114,12 @@ class ClueCatalog {
       id: 'quiet_corner_01',
       title: 'Quiet Corner',
       category: 'recovery',
-      signalTags: const [
-        'high_calendar_load',
-        'short_sleep',
-        'low_activity'
-      ],
+      signalTags: const ['high_calendar_load', 'short_sleep', 'low_activity'],
       possibleMeanings: const [
         'Restorative solitude',
         'Sensory recovery',
         'Felt disconnected',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.possibleExplanation,
       baseWeight: 0.65,
@@ -138,7 +133,7 @@ class ClueCatalog {
         'Restorative solitude',
         'Sensory recovery',
         'Felt disconnected',
-        'Not sure'
+        'Not sure',
       ],
     ),
     Clue(
@@ -150,7 +145,7 @@ class ClueCatalog {
         'Survival fuel',
         'Cozy morning ritual',
         'Jittery overdrive',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.possibleExplanation,
       baseWeight: 0.7,
@@ -163,7 +158,7 @@ class ClueCatalog {
         'Survival fuel',
         'Cozy morning ritual',
         'Jittery overdrive',
-        'Not sure'
+        'Not sure',
       ],
     ),
 
@@ -177,7 +172,7 @@ class ClueCatalog {
         'Workout to clear head',
         'Active transit',
         'Social walk',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.helpfulAction,
       baseWeight: 0.75,
@@ -185,13 +180,12 @@ class ClueCatalog {
       x: 0.75,
       y: 0.76,
       icon: Icons.directions_run,
-      question:
-          'You clocked high movement today. What motivated you to move?',
+      question: 'You clocked high movement today. What motivated you to move?',
       options: const [
         'Workout to clear head',
         'Active transit',
         'Social walk',
-        'Not sure'
+        'Not sure',
       ],
     ),
     Clue(
@@ -203,7 +197,7 @@ class ClueCatalog {
         'Rejuvenating freedom',
         'Anxious listlessness',
         'Peaceful break',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.helpfulAction,
       baseWeight: 0.6,
@@ -217,7 +211,7 @@ class ClueCatalog {
         'Rejuvenating freedom',
         'Anxious listlessness',
         'Peaceful break',
-        'Not sure'
+        'Not sure',
       ],
     ),
 
@@ -231,7 +225,7 @@ class ClueCatalog {
         'Late night focus',
         'Ambient room light',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.neutralDistractor,
       baseWeight: 0.4,
@@ -244,7 +238,7 @@ class ClueCatalog {
         'Late night focus',
         'Ambient room light',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
     ),
     Clue(
@@ -255,7 +249,7 @@ class ClueCatalog {
       possibleMeanings: const [
         'Calming indoor nature',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.neutralDistractor,
       baseWeight: 0.4,
@@ -275,7 +269,7 @@ class ClueCatalog {
         'Focused music work',
         'Blocking out noise',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.neutralDistractor,
       baseWeight: 0.45,
@@ -288,7 +282,7 @@ class ClueCatalog {
         'Focused music work',
         'Blocking out noise',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
     ),
     Clue(
@@ -299,7 +293,7 @@ class ClueCatalog {
       possibleMeanings: const [
         'Staying hydrated',
         'Ordinary daily item',
-        'Not sure'
+        'Not sure',
       ],
       clueType: ClueType.neutralDistractor,
       baseWeight: 0.35,
@@ -308,11 +302,7 @@ class ClueCatalog {
       y: 0.58,
       icon: Icons.local_drink,
       question: 'You tapped the Water Bottle. What did this represent?',
-      options: const [
-        'Staying hydrated',
-        'Ordinary daily item',
-        'Not sure'
-      ],
+      options: const ['Staying hydrated', 'Ordinary daily item', 'Not sure'],
     ),
   ];
 

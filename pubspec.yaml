@@ -30,3 +30,19 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/cozy_bedroom_scene.png
+    - assets/cozy_reflection_header.png
+    - assets/figma_intro_background.png
+    - assets/figma_loading_background.png
+  fonts:
+    - family: DMSans
+      fonts:
+        - asset: assets/fonts/DMSans-Variable.ttf
+        - asset: assets/fonts/DMSans-Italic-Variable.ttf
+          style: italic
+    - family: Lora
+      fonts:
+        - asset: assets/fonts/Lora-Variable.ttf
+        - asset: assets/fonts/Lora-Italic-Variable.ttf
+          style: italic

@@ -13,7 +13,7 @@ class FallbackQuestions {
         'Lower energy',
         'Harder to focus',
         'Did not affect me',
-        'Not sure'
+        'Not sure',
       ],
       purpose: 'fallback_clarification',
     ),
@@ -28,7 +28,7 @@ class FallbackQuestions {
         'Needed physical movement',
         'Felt stuck at desk',
         'Felt restorative rest',
-        'Not sure'
+        'Not sure',
       ],
       purpose: 'fallback_clarification',
     ),
@@ -43,7 +43,7 @@ class FallbackQuestions {
         'Helped me recover',
         'Felt isolating',
         'Felt neutral',
-        'Not sure'
+        'Not sure',
       ],
       purpose: 'fallback_clarification',
     ),
@@ -53,7 +53,7 @@ class FallbackQuestions {
         'Created cozy focus',
         'Made me feel restless',
         'Had no impact',
-        'Not sure'
+        'Not sure',
       ],
       purpose: 'fallback_clarification',
     ),

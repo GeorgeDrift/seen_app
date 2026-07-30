@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
 import 'presentation/controllers/app_navigation_controller.dart';
-import 'presentation/screens/main_layout.dart';
+import 'presentation/screens/main_shell.dart';
 import 'presentation/screens/walkthrough_screen.dart';
 
 void main() {
@@ -16,9 +16,9 @@ class SeenApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Seen — Behavioral Annotation & Therapist System',
+      title: 'Seen',
       debugShowCheckedModeBanner: false,
-      theme: getDarkSeenTheme(),
+      theme: getLightSeenTheme(),
       home: const AppEntry(),
     );
   }
@@ -39,18 +39,18 @@ class AppEntry extends ConsumerWidget {
       transitionBuilder: (child, animation) => FadeTransition(
         opacity: animation,
         child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0, 0.04),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutCubic,
-          )),
+          position:
+              Tween<Offset>(
+                begin: const Offset(0, 0.04),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+              ),
           child: child,
         ),
       ),
       child: walkthroughDone
-          ? const MainLayout(key: ValueKey('main'))
+          ? const MainShell(key: ValueKey('main'))
           : const WalkthroughScreen(key: ValueKey('walkthrough')),
     );
   }

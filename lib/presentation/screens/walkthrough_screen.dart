@@ -11,8 +11,7 @@ class WalkthroughScreen extends ConsumerStatefulWidget {
   const WalkthroughScreen({super.key});
 
   @override
-  ConsumerState<WalkthroughScreen> createState() =>
-      _WalkthroughScreenState();
+  ConsumerState<WalkthroughScreen> createState() => _WalkthroughScreenState();
 }
 
 class _WalkthroughScreenState extends ConsumerState<WalkthroughScreen>
@@ -116,8 +115,7 @@ class _WalkthroughScreenState extends ConsumerState<WalkthroughScreen>
     );
   }
 
-  void _finish() =>
-      ref.read(walkthroughDoneProvider.notifier).markDone();
+  void _finish() => ref.read(walkthroughDoneProvider.notifier).markDone();
 
   void _next() {
     if (_currentPage < _pages.length - 1) {
@@ -150,7 +148,9 @@ class _WalkthroughScreenState extends ConsumerState<WalkthroughScreen>
                 alignment: Alignment.topRight,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 16),
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
                   child: GestureDetector(
                     onTap: _finish,
                     child: AnimatedOpacity(
@@ -158,13 +158,15 @@ class _WalkthroughScreenState extends ConsumerState<WalkthroughScreen>
                       duration: const Duration(milliseconds: 300),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                              color:
-                                  Colors.white.withValues(alpha: 0.15)),
+                            color: Colors.white.withValues(alpha: 0.15),
+                          ),
                         ),
                         child: Text(
                           'Skip',
@@ -235,8 +237,7 @@ class _WalkthroughScreenState extends ConsumerState<WalkthroughScreen>
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color:
-                                  page.glowColor.withValues(alpha: 0.45),
+                              color: page.glowColor.withValues(alpha: 0.45),
                               blurRadius: 24,
                               spreadRadius: 2,
                               offset: const Offset(0, 6),
@@ -268,8 +269,9 @@ class _WalkthroughScreenState extends ConsumerState<WalkthroughScreen>
                             color: Colors.white.withValues(alpha: 0.45),
                             fontSize: 13,
                             decoration: TextDecoration.underline,
-                            decorationColor:
-                                Colors.white.withValues(alpha: 0.3),
+                            decorationColor: Colors.white.withValues(
+                              alpha: 0.3,
+                            ),
                           ),
                         ),
                       ),
@@ -449,8 +451,9 @@ class _IllustrationPainter extends CustomPainter {
 
       final tp = TextPainter(
         text: TextSpan(
-            text: emojis[i],
-            style: TextStyle(fontSize: i == emojis.length - 1 ? 28 : 20)),
+          text: emojis[i],
+          style: TextStyle(fontSize: i == emojis.length - 1 ? 28 : 20),
+        ),
         textDirection: TextDirection.ltr,
       );
       tp.layout();
@@ -484,15 +487,13 @@ class _IllustrationPainter extends CustomPainter {
       Offset(center.dx + 20, center.dy - 80),
       Offset(center.dx - 80, center.dy + 10),
     ];
-    final sizes = [
-      const Size(80, 48),
-      const Size(70, 42),
-      const Size(60, 36),
-    ];
+    final sizes = [const Size(80, 48), const Size(70, 42), const Size(60, 36)];
 
     for (int i = 0; i < offsets.length; i++) {
       final rect = RRect.fromRectAndRadius(
-          offsets[i] & sizes[i], const Radius.circular(10));
+        offsets[i] & sizes[i],
+        const Radius.circular(10),
+      );
       canvas.drawRRect(rect, cardPaint);
       canvas.drawRRect(rect, borderPaint);
     }

@@ -20,9 +20,10 @@ void main() {
     // Let AnimatedSwitcher and initial pulses settle.
     await tester.pumpAndSettle(const Duration(milliseconds: 800));
 
-    expect(find.text('S E E N'), findsOneWidget);
-    expect(find.text('Patient View'), findsOneWidget);
-    expect(find.text('Therapist Portal'), findsOneWidget);
+    expect(find.text('SEEN'), findsOneWidget);
+    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('Patterns'), findsOneWidget);
+    expect(find.text('Profile'), findsOneWidget);
   });
 }
 

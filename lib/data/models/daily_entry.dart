@@ -25,13 +25,12 @@ class DailyEntry {
   final String generatedSummary;
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'date': date,
-        'context': context.toJson(),
-        'interpretedSignals':
-            interpretedSignals.map((s) => s.toJson()).toList(),
-        'displayedClueIds': displayedClueIds,
-        'selectedClues': selectedClues.map((s) => s.toJson()).toList(),
-        'generatedSummary': generatedSummary,
-      };
+    'id': id,
+    'date': date,
+    'context': context.toJson(),
+    'interpretedSignals': interpretedSignals.map((s) => s.toJson()).toList(),
+    'displayedClueIds': displayedClueIds,
+    'selectedClues': selectedClues.map((s) => s.toJson()).toList(),
+    'generatedSummary': generatedSummary,
+  };
 }
