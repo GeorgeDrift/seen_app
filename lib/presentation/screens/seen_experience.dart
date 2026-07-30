@@ -7,8 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/local/day_progress_store.dart';
 import '../../data/models/clue.dart';
 import '../../data/models/clue_selection.dart';
-import '../../data/models/scene_composition.dart';
-import '../../data/models/scene_tap_map.dart';
 import '../controllers/day_flow_controller.dart';
 import '../providers/api_providers.dart';
 
@@ -20,7 +18,6 @@ const _surface = Color(0xfff3f1f8);
 const _cream = Color(0xfffaf7f2);
 const _white = Color(0xfffdfbff);
 const _userName = 'Upasana';
-const _phoneCanvasWidth = 430.0;
 
 enum _JourneyPage { welcome, intro, moments, preparing, reflection, completed }
 
@@ -125,7 +122,7 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
 
     if (existing == null && flow.selections.length >= kMaxSelectionsPerDay) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You can save up to five moments.')),
+        const SnackBar(content: Text('You can save up to three moments.')),
       );
       return;
     }
@@ -161,7 +158,7 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
 
     if (!accepted && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You can save up to five moments.')),
+        const SnackBar(content: Text('You can save up to three moments.')),
       );
       return;
     }
@@ -170,7 +167,7 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
 
   Future<void> _prepareReflection() async {
     final flow = ref.read(dayFlowControllerProvider);
-    if (flow.selections.length < kMinSelectionsPerDay) return;
+    if (flow.selections.isEmpty) return;
 
     _go(_JourneyPage.preparing);
 
@@ -267,7 +264,6 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
       ),
       _JourneyPage.intro => _SceneIntroScreen(
         key: const ValueKey('intro'),
-        sceneLabel: flow.scene.label,
         onBack: () => _go(_JourneyPage.welcome),
         onEnter: () => _go(_JourneyPage.moments),
       ),
@@ -314,31 +310,27 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: isDark ? const Color(0xff0d0816) : _surface,
+        backgroundColor: _surface,
         body: DecoratedBox(
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xff0d0816) : _surface,
-          ),
+          decoration: const BoxDecoration(color: _surface),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: _phoneCanvasWidth),
-              child: SizedBox.expand(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 360),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  transitionBuilder: (child, animation) => FadeTransition(
-                    opacity: animation,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0.025, 0),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: child,
-                    ),
+              constraints: const BoxConstraints(maxWidth: 700),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 360),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.025, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
                   ),
-                  child: screen,
                 ),
+                child: screen,
               ),
             ),
           ),
@@ -363,10 +355,6 @@ class _WelcomeScreen extends StatelessWidget {
     final sleep = _formatSleep(flow.context.sleepHours);
     final steps = _formatNumber(flow.context.steps ?? 0);
     final weather = _titleCase(flow.context.weather);
-    final screen = MediaQuery.sizeOf(context);
-    final compact = screen.height < 720;
-    final horizontal = screen.width < 360 ? 18.0 : 24.0;
-    final headerHeight = (screen.height * 0.23).clamp(140.0, 192.0);
 
     return ColoredBox(
       color: _surface,
@@ -376,50 +364,47 @@ class _WelcomeScreen extends StatelessWidget {
           const _BrandBar(),
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
-                horizontal,
-                4,
-                horizontal,
-                compact ? 18 : 28,
-              ),
+              padding: const EdgeInsets.fromLTRB(24, 4, 24, 28),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _HeaderIllustration(height: headerHeight),
-                  SizedBox(height: compact ? 14 : 22),
-                  Text(_dateLabel(), style: _kicker()),
-                  SizedBox(height: compact ? 8 : 14),
-                  Text(
-                    'Good evening,',
-                    style: _display(size: compact ? 26 : 30),
+                  const _HeaderIllustration(
+                    imagePath: 'assets/cozy_evening_header.png',
                   ),
+                  const SizedBox(height: 22),
+                  Text(_dateLabel(), style: _kicker()),
+                  const SizedBox(height: 14),
+                  Text('Good evening,', style: _display(height: 1.35)),
                   Text(
                     '$_userName.',
-                    style: _display(
-                      color: _purple,
-                      italic: true,
-                      size: compact ? 26 : 30,
-                    ),
+                    style: _display(color: _purple, italic: true, height: 1.35),
                   ),
-                  SizedBox(height: compact ? 8 : 14),
+                  const SizedBox(height: 14),
                   Text("Let's talk about today.", style: _serifTitle()),
-                  SizedBox(height: compact ? 7 : 12),
+                  const SizedBox(height: 12),
                   Text(
                     "You don't have to remember everything. We'll help "
                     'you find a place to begin.',
                     style: _bodyStyle(),
                   ),
-                  SizedBox(height: compact ? 12 : 20),
+                  const SizedBox(height: 20),
                   _GlimpseCard(sleep: sleep, steps: steps, weather: weather),
-                  SizedBox(height: compact ? 10 : 14),
+                  const SizedBox(height: 28),
                   _PrimaryButton(
                     label: '✦   Explore my day',
                     onPressed: onExplore,
+                    borderRadius: 18,
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [_purple, Color(0xff5e4e80)],
+                    ),
                   ),
                 ],
               ),
             ),
           ),
+          const _BottomNavigation(),
         ],
       ),
     );
@@ -429,12 +414,10 @@ class _WelcomeScreen extends StatelessWidget {
 class _SceneIntroScreen extends StatelessWidget {
   const _SceneIntroScreen({
     super.key,
-    required this.sceneLabel,
     required this.onBack,
     required this.onEnter,
   });
 
-  final String sceneLabel;
   final VoidCallback onBack;
   final VoidCallback onEnter;
 
@@ -449,8 +432,13 @@ class _SceneIntroScreen extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              stops: [0.18, 0.46, 0.72],
-              colors: [Color(0x00110b1b), Color(0x33110b1b), Color(0xee0d0816)],
+              stops: [0.30, 0.40, 0.57, 1.0],
+              colors: [
+                Color(0x00080512),
+                Color(0xb8080512),
+                Color(0xeb080512),
+                Color(0xf706030e),
+              ],
             ),
           ),
         ),
@@ -465,146 +453,175 @@ class _SceneIntroScreen extends StatelessWidget {
                     icon: Icons.arrow_back_ios_new_rounded,
                     onPressed: onBack,
                     light: true,
+                    fillOpacity: 0.15,
+                    showBorder: true,
                   ),
                   const SizedBox(width: 10),
                   Text(
                     'SEEN',
                     style: _lora(
-                      color: Colors.white,
-                      fontSize: 16,
-                      letterSpacing: 1.5,
+                      color: Colors.white.withValues(alpha: 0.88),
+                      fontSize: 17,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 1.02,
                     ),
                   ),
                 ],
               ),
             ),
-            Expanded(
-              child: _BottomAlignedScroll(
-                padding: const EdgeInsets.fromLTRB(24, 12, 24, 27),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'YOUR SCENE IS READY',
-                      style: _kicker(color: Colors.white),
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'YOUR SCENE IS READY',
+                    style: _kicker(
+                      color: Colors.white,
+                      weight: FontWeight.w500,
+                      letterSpacing: 1.43,
                     ),
-                    const SizedBox(height: 14),
-                    RichText(
-                      text: TextSpan(
-                        style: _display(color: Colors.white, size: 28),
-                        children: [
-                          const TextSpan(text: "Let's take a "),
-                          TextSpan(
-                            text: 'closer look.',
-                            style: _display(
-                              color: const Color(0xffc4a8e8),
-                              size: 28,
-                              italic: true,
+                  ),
+                  const SizedBox(height: 18),
+                  RichText(
+                    text: TextSpan(
+                      style: _display(color: Colors.white, size: 28),
+                      children: [
+                        const TextSpan(text: "Let's take a "),
+                        TextSpan(
+                          text: 'closer look.',
+                          style: _display(
+                            color: const Color(0xffc4a8e8),
+                            size: 28,
+                            italic: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    'We created a scene for you to explore. Take a look '
+                    'around and notice what brings a moment from your day '
+                    'back to mind.',
+                    style: _bodyStyle(
+                      color: Colors.white,
+                      size: 14,
+                      height: 1.65,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.09),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.13),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.auto_awesome,
+                              size: 14,
+                              color: Color(0xffc4a8e8),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              'How this works',
+                              style: _sans(
+                                color: const Color(0xfff2ede4),
+                                size: 13,
+                                weight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 13),
+                        Text(
+                          "Tap anything that brings back a moment from today. "
+                          "An object doesn't have to match your day exactly — "
+                          'it can remind you of something completely different.',
+                          style: _bodyStyle(
+                            color: const Color(
+                              0xffebe4f8,
+                            ).withValues(alpha: 0.88),
+                            size: 13,
+                            height: 1.6,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.07),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: const Color(
+                                0xffc4a8e8,
+                              ).withValues(alpha: 0.5),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Text(
-                      'We created a scene for you to explore. Take a look '
-                      'around and notice what brings a moment from your day '
-                      'back to mind.',
-                      style: _bodyStyle(
-                        color: Colors.white,
-                        size: 14,
-                        height: 1.65,
-                      ),
-                    ),
-                    const SizedBox(height: 18),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(17),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.13),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(
-                                Icons.auto_awesome,
-                                size: 14,
-                                color: Color(0xffc4a8e8),
-                              ),
-                              const SizedBox(width: 10),
                               Text(
-                                'How this works',
-                                style: _sans(
-                                  color: Colors.white,
-                                  size: 13,
+                                'FOR EXAMPLE',
+                                style: _kicker(
+                                  color: const Color(
+                                    0xffc4a8e8,
+                                  ).withValues(alpha: 0.7),
+                                  size: 11,
                                   weight: FontWeight.w600,
+                                  letterSpacing: 0.88,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'A cup might remind you of a quiet break, '
+                                'a conversation, or forgetting to eat.',
+                                style: _bodyStyle(
+                                  color: const Color(
+                                    0xffebe4f8,
+                                  ).withValues(alpha: 0.7),
+                                  size: 12,
+                                  height: 1.55,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 13),
-                          Text(
-                            "Tap anything that brings back a moment from today. "
-                            "An object doesn't have to match your day exactly — "
-                            'it can remind you of something completely different.',
-                            style: _bodyStyle(
-                              color: const Color(0xffded7e6),
-                              size: 13,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.fromLTRB(13, 11, 13, 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.07),
-                              borderRadius: BorderRadius.circular(10),
-                              border: const Border(
-                                left: BorderSide(
-                                  color: Color(0xffa78bc8),
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'FOR EXAMPLE',
-                                  style: _kicker(
-                                    color: const Color(0xffaa9bc1),
-                                    size: 10,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  'A cup might remind you of a quiet break, '
-                                  'a conversation, or forgetting to eat.',
-                                  style: _bodyStyle(
-                                    color: const Color(0xffc9c1d2),
-                                    size: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 22),
-                    _PrimaryButton(
-                      label: 'Enter the scene   →',
-                      onPressed: onEnter,
-                      background: const Color(0xff8069a4),
+                  ),
+                  const SizedBox(height: 26),
+                  _PrimaryButton(
+                    label: 'Enter the scene   →',
+                    onPressed: onEnter,
+                    borderRadius: 18,
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        _purple.withValues(alpha: 0.95),
+                        const Color(0xff5e4e80).withValues(alpha: 0.98),
+                      ],
                     ),
-                  ],
-                ),
+                    borderColor: Colors.white.withValues(alpha: 0.15),
+                    textStyle: _sans(
+                      color: Colors.white,
+                      size: 16,
+                      weight: FontWeight.w600,
+                      letterSpacing: 0.16,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -634,9 +651,6 @@ class _MomentsScreen extends StatelessWidget {
         .map((selection) => selection.clueId)
         .toSet();
     final count = selectedIds.length;
-    final screen = MediaQuery.sizeOf(context);
-    final compact = screen.height < 700;
-    final horizontal = screen.width < 360 ? 16.0 : 24.0;
 
     return ColoredBox(
       color: _surface,
@@ -644,12 +658,7 @@ class _MomentsScreen extends StatelessWidget {
         children: [
           const _SystemTop(),
           Padding(
-            padding: EdgeInsets.fromLTRB(
-              horizontal,
-              0,
-              horizontal,
-              compact ? 7 : 12,
-            ),
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
             child: Row(
               children: [
                 _RoundButton(
@@ -697,42 +706,49 @@ class _MomentsScreen extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsets.fromLTRB(
-              horizontal,
-              0,
-              horizontal,
-              compact ? 8 : 14,
-            ),
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'What brings a part of your day back to mind?',
-                  style: _serifTitle(size: compact ? 18 : 20, height: 1.24),
+                  style: _serifTitle(size: 20, height: 1.24),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   'Look around and tap anything that feels familiar, '
                   'meaningful, or worth remembering.',
-                  style: _bodyStyle(size: compact ? 12 : 13),
+                  style: _bodyStyle(size: 13),
                 ),
               ],
             ),
           ),
           Expanded(
-            child: _SceneImage(
-              scene: flow.scene,
-              selectedIds: selectedIds,
-              onSelect: onSelect,
+            child: SingleChildScrollView(
+              child: AspectRatio(
+                // Matches cozy_bedroom_scene.png's native 1:1 dimensions so
+                // the full image always shows at a consistent scale — an
+                // Expanded box alone stretches to fill arbitrary leftover
+                // height (which shrinks whenever the keyboard opens for the
+                // moment-capture sheet), and BoxFit.cover on a mismatched
+                // aspect ratio crops the sides, throwing off hotspot
+                // alignment and hiding some objects entirely.
+                aspectRatio: 1,
+                child: _SceneImage(
+                  clues: flow.scene.visibleClues,
+                  selectedIds: selectedIds,
+                  onSelect: onSelect,
+                ),
+              ),
             ),
           ),
           Container(
             width: double.infinity,
             padding: EdgeInsets.fromLTRB(
-              horizontal,
-              compact ? 10 : 17,
-              horizontal,
-              (compact ? 12 : 20) + MediaQuery.paddingOf(context).bottom,
+              24,
+              17,
+              24,
+              28 + MediaQuery.paddingOf(context).bottom,
             ),
             decoration: const BoxDecoration(
               color: _white,
@@ -740,7 +756,7 @@ class _MomentsScreen extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: Color(0x177b6a9e),
-                  blurRadius: 14,
+                  blurRadius: 24,
                   offset: Offset(0, -6),
                 ),
               ],
@@ -754,10 +770,15 @@ class _MomentsScreen extends StatelessWidget {
                   style: _bodyStyle(size: 12.5),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: compact ? 8 : 12),
+                const SizedBox(height: 12),
                 _PrimaryButton(
                   label: count == 0 ? 'Continue' : 'Review my moments',
                   onPressed: count == 0 ? null : onReview,
+                  textStyle: const TextStyle(
+                    fontFamily: 'DMSans',
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -773,23 +794,74 @@ class _MomentsScreen extends StatelessWidget {
       backgroundColor: Colors.transparent,
       constraints: const BoxConstraints(maxWidth: 430),
       builder: (context) => Container(
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 30),
-        decoration: const BoxDecoration(
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 40),
+        decoration: BoxDecoration(
           color: _white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: _ink.withValues(alpha: 0.18),
+              blurRadius: 40,
+              offset: const Offset(0, -8),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const _SheetHandle(),
-            const SizedBox(height: 22),
-            Text('How this works', style: _serifTitle()),
-            const SizedBox(height: 10),
+            const SizedBox(height: 24),
+            Text('How this works', style: _serifTitle(size: 20, height: 1.5)),
+            const SizedBox(height: 14),
             Text(
-              "Tap anything that brings back a moment from today. "
-              "It does not need to match your day literally.",
-              style: _bodyStyle(size: 14),
+              "Tap anything that brings back a moment from today. The "
+              "object doesn't have to match exactly — it can remind you "
+              "of something completely different.",
+              style: _bodyStyle(
+                color: const Color(0xff5c5570),
+                size: 14,
+                height: 1.65,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: _surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Example',
+                    style: _sans(
+                      color: _purple,
+                      size: 12,
+                      weight: FontWeight.w600,
+                      letterSpacing: 0.48,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'A cup might remind you of a quiet break, a '
+                    'conversation, or forgetting to eat.',
+                    style: _bodyStyle(
+                      color: const Color(0xff5c5570),
+                      size: 13,
+                      height: 1.6,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            _PrimaryButton(
+              label: 'Got it',
+              borderRadius: 14,
+              onPressed: () => Navigator.pop(context),
             ),
           ],
         ),
@@ -798,145 +870,84 @@ class _MomentsScreen extends StatelessWidget {
   }
 }
 
-class _SceneImage extends StatefulWidget {
+class _SceneImage extends StatelessWidget {
   const _SceneImage({
-    required this.scene,
+    required this.clues,
     required this.selectedIds,
     required this.onSelect,
   });
 
-  final SceneComposition scene;
+  final List<Clue> clues;
   final Set<String> selectedIds;
   final ValueChanged<Clue> onSelect;
 
   @override
-  State<_SceneImage> createState() => _SceneImageState();
-}
-
-class _SceneImageState extends State<_SceneImage> {
-  late Future<SceneTapMap> _tapMap;
-
-  @override
-  void initState() {
-    super.initState();
-    _tapMap = SceneTapMap.load(widget.scene.kind.tapMapAssetPath);
-  }
-
-  @override
-  void didUpdateWidget(covariant _SceneImage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.scene.kind != widget.scene.kind) {
-      _tapMap = SceneTapMap.load(widget.scene.kind.tapMapAssetPath);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return FutureBuilder<SceneTapMap>(
-      future: _tapMap,
-      builder: (context, snapshot) {
-        final tapMap = snapshot.data;
-        if (tapMap == null) {
-          return SingleChildScrollView(
-            child: Image.asset(
-              widget.scene.assetPath,
-              width: double.infinity,
-              fit: BoxFit.fitWidth,
-              alignment: Alignment.topCenter,
-            ),
-          );
-        }
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final canvasSize = Size(
-              constraints.maxWidth,
-              constraints.maxWidth / tapMap.imageSize.aspectRatio,
-            );
-            return SingleChildScrollView(
-              child: SizedBox.fromSize(
-                size: canvasSize,
-                child: Stack(
-                  fit: StackFit.expand,
-                  clipBehavior: Clip.hardEdge,
-                  children: [
-                    Image.asset(
-                      widget.scene.assetPath,
-                      width: canvasSize.width,
-                      height: canvasSize.height,
-                      fit: BoxFit.fill,
-                    ),
-                    for (final target in tapMap.items)
-                      Positioned.fromRect(
-                        rect: target.tapAreaFor(canvasSize),
-                        child: Semantics(
-                          button: true,
-                          label: target.label,
-                          selected: widget.selectedIds.contains(
-                            target.clueId(tapMap.sceneId),
+    return LayoutBuilder(
+      builder: (context, constraints) => Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/cozy_bedroom_scene.png',
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+          ),
+          for (final clue in clues)
+            Positioned(
+              left: math.max(
+                0,
+                math.min(
+                  constraints.maxWidth - 54,
+                  clue.x * constraints.maxWidth - 27,
+                ),
+              ),
+              top: math.max(
+                0,
+                math.min(
+                  constraints.maxHeight - 54,
+                  clue.y * constraints.maxHeight - 27,
+                ),
+              ),
+              child: Semantics(
+                button: true,
+                label: clue.title,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () => onSelect(clue),
+                  child: SizedBox(
+                    width: 54,
+                    height: 54,
+                    child: Center(
+                      child: AnimatedScale(
+                        duration: const Duration(milliseconds: 180),
+                        scale: selectedIds.contains(clue.id) ? 1 : 0,
+                        child: Container(
+                          width: 25,
+                          height: 25,
+                          decoration: const BoxDecoration(
+                            color: _purple,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Color(0x33000000),
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
                           ),
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () =>
-                                widget.onSelect(target.asClue(tapMap.sceneId)),
-                            child: const SizedBox.expand(),
+                          child: const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 16,
                           ),
                         ),
                       ),
-                    for (final target in tapMap.items)
-                      if (widget.selectedIds.contains(
-                        target.clueId(tapMap.sceneId),
-                      ))
-                        _SceneCheckmark(
-                          position: target.checkmarkFor(canvasSize),
-                          canvasSize: canvasSize,
-                        ),
-                  ],
+                    ),
+                  ),
                 ),
               ),
-            );
-          },
-        );
-      },
-    );
-  }
-}
-
-class _SceneCheckmark extends StatelessWidget {
-  const _SceneCheckmark({required this.position, required this.canvasSize});
-
-  static const _size = 25.0;
-
-  final Offset position;
-  final Size canvasSize;
-
-  @override
-  Widget build(BuildContext context) {
-    final left = (position.dx - _size / 2)
-        .clamp(0.0, math.max(0.0, canvasSize.width - _size))
-        .toDouble();
-    final top = (position.dy - _size / 2)
-        .clamp(0.0, math.max(0.0, canvasSize.height - _size))
-        .toDouble();
-    return Positioned(
-      left: left,
-      top: top,
-      child: IgnorePointer(
-        child: Container(
-          width: _size,
-          height: _size,
-          decoration: const BoxDecoration(
-            color: _purple,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Color(0x33000000),
-                blurRadius: 6,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: const Icon(Icons.check_rounded, color: Colors.white, size: 16),
-        ),
+            ),
+        ],
       ),
     );
   }
@@ -951,56 +962,70 @@ class _PreparingScreen extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         Image.asset('assets/figma_loading_background.png', fit: BoxFit.cover),
-        SafeArea(
-          child: _AlignedScroll(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            child: Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(maxWidth: 342),
-              padding: const EdgeInsets.fromLTRB(32, 39, 32, 34),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.79),
-                borderRadius: BorderRadius.circular(27),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '◉  SEEN',
-                    style: _lora(
-                      color: const Color(0xff4a4260),
-                      fontSize: 14,
-                      letterSpacing: 1.4,
-                    ),
+        DecoratedBox(
+          decoration: BoxDecoration(color: _softPurple.withValues(alpha: 0.52)),
+        ),
+        Center(
+          child: Container(
+            width: 342,
+            margin: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.fromLTRB(36, 36, 36, 32),
+            decoration: BoxDecoration(
+              color: _white.withValues(alpha: 0.62),
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '◉  SEEN',
+                  style: _lora(
+                    color: const Color(0xff4a4260),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1.05,
                   ),
-                  const SizedBox(height: 55),
-                  Text(
-                    'Bringing your day',
-                    style: _display(size: 27),
-                    textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 55),
+                Text(
+                  'Bringing your day',
+                  style: _display(size: 27, height: 1.25),
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  'together.',
+                  style: _display(
+                    size: 27,
+                    color: _purple,
+                    italic: true,
+                    height: 1.25,
                   ),
-                  Text(
-                    'together.',
-                    style: _display(size: 27, color: _purple, italic: true),
-                    textAlign: TextAlign.center,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 17),
+                Text(
+                  "We're using the moments you shared to prepare a "
+                  'reflection you can review and shape.',
+                  style: _bodyStyle(
+                    color: const Color(0xff3a3448),
+                    size: 14,
+                    height: 1.65,
                   ),
-                  const SizedBox(height: 17),
-                  Text(
-                    "We're using the moments you shared to prepare a "
-                    'reflection you can review and shape.',
-                    style: _bodyStyle(color: const Color(0xff4a4260), size: 14),
-                    textAlign: TextAlign.center,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 44),
+                const _AnimatedDots(),
+                const SizedBox(height: 28),
+                Text(
+                  'Preparing your reflection…',
+                  style: _sans(
+                    color: const Color(0xff5c5570),
+                    size: 12,
+                    height: 1.5,
+                    letterSpacing: 0.48,
                   ),
-                  const SizedBox(height: 34),
-                  const _AnimatedDots(),
-                  const SizedBox(height: 21),
-                  Text(
-                    'Preparing your reflection…',
-                    style: _bodyStyle(color: const Color(0xff5c5570), size: 13),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
@@ -1039,17 +1064,13 @@ class _ReflectionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screen = MediaQuery.sizeOf(context);
-    final compact = screen.height < 700;
-    final horizontal = screen.width < 360 ? 18.0 : 24.0;
-
     return ColoredBox(
       color: _surface,
       child: Column(
         children: [
           const _SystemTop(),
           Padding(
-            padding: EdgeInsets.fromLTRB(horizontal, 0, horizontal, 0),
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
             child: Row(
               children: [
                 _RoundButton(
@@ -1059,7 +1080,12 @@ class _ReflectionScreen extends StatelessWidget {
                 const Spacer(),
                 Text(
                   'SEEN',
-                  style: _lora(fontSize: 15, letterSpacing: 1.5, color: _ink),
+                  style: _lora(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.8,
+                    color: _ink,
+                  ),
                 ),
                 const Spacer(),
                 const SizedBox(width: 36),
@@ -1067,25 +1093,20 @@ class _ReflectionScreen extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsets.fromLTRB(
-              horizontal,
-              compact ? 8 : 14,
-              horizontal,
-              compact ? 10 : 18,
-            ),
+            padding: const EdgeInsets.fromLTRB(24, 14, 24, 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 RichText(
                   text: TextSpan(
-                    style: _serifTitle(size: compact ? 21 : 23, height: 1.22),
+                    style: _serifTitle(size: 24, height: 1.25),
                     children: [
                       const TextSpan(text: "Here's what your day "),
                       TextSpan(
                         text: 'seems to hold.',
                         style: _serifTitle(
-                          size: compact ? 21 : 23,
-                          height: 1.22,
+                          size: 24,
+                          height: 1.25,
                           color: _purple,
                           italic: true,
                         ),
@@ -1093,7 +1114,7 @@ class _ReflectionScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 7),
+                const SizedBox(height: 14),
                 Text(
                   "This is a starting point. Change anything that doesn't "
                   'feel like you.',
@@ -1104,14 +1125,18 @@ class _ReflectionScreen extends StatelessWidget {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
-                horizontal,
-                4,
-                horizontal,
-                compact ? 14 : 24,
-              ),
+              padding: const EdgeInsets.fromLTRB(24, 4, 24, 24),
               child: _SoftCard(
                 padding: const EdgeInsets.fromLTRB(20, 22, 20, 21),
+                borderRadius: 20,
+                boxShadow: [
+                  BoxShadow(color: _purple.withValues(alpha: 0.06)),
+                  BoxShadow(
+                    color: _purple.withValues(alpha: 0.1),
+                    blurRadius: 16,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
                 child: editing
                     ? _ReflectionEditor(
                         controller: editController,
@@ -1127,22 +1152,25 @@ class _ReflectionScreen extends StatelessWidget {
                             reflection,
                             style: _lora(
                               color: _ink,
-                              fontSize: 16,
-                              height: 1.52,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              height: 1.6,
                             ),
                           ),
                           const SizedBox(height: 16),
                           OutlinedButton.icon(
                             onPressed: onEdit,
-                            icon: const Icon(Icons.edit_outlined, size: 16),
+                            icon: const Icon(Icons.edit_outlined, size: 13),
                             label: const Text('Edit reflection'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: _purple,
-                              side: const BorderSide(color: Color(0xffded6e6)),
+                              side: BorderSide(
+                                color: _purple.withValues(alpha: 0.25),
+                              ),
                               shape: const StadiumBorder(),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
-                                vertical: 11,
+                                vertical: 8,
                               ),
                               textStyle: _sans(
                                 size: 13,
@@ -1158,31 +1186,44 @@ class _ReflectionScreen extends StatelessWidget {
           if (!editing)
             Container(
               padding: EdgeInsets.fromLTRB(
-                horizontal,
-                compact ? 9 : 14,
-                horizontal,
-                (compact ? 10 : 18) + MediaQuery.paddingOf(context).bottom,
+                24,
+                14,
+                24,
+                28 + MediaQuery.paddingOf(context).bottom,
               ),
-              decoration: const BoxDecoration(
-                color: _white,
-                border: Border(top: BorderSide(color: Color(0x197b6a9e))),
+              decoration: BoxDecoration(
+                color: _surface,
+                border: const Border(top: BorderSide(color: Color(0x197b6a9e))),
+                boxShadow: [
+                  BoxShadow(
+                    color: _purple.withValues(alpha: 0.07),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
                   _PrimaryButton(
                     label: saving ? 'Saving…' : 'Save reflection',
                     onPressed: saving ? null : onSaveReflection,
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [_purple, Color(0xff5e4e80)],
+                    ),
+                    textStyle: const TextStyle(
+                      fontFamily: 'DMSans',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   TextButton(
                     onPressed: onBack,
                     child: Text(
                       'Go back to my moments',
-                      style: _sans(
-                        color: _muted,
-                        size: 12,
-                        decoration: TextDecoration.underline,
-                      ),
+                      style: _sans(color: _muted, size: 13),
                     ),
                   ),
                 ],
@@ -1214,12 +1255,15 @@ class _ReflectionEditor extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('MAKE IT SOUND MORE LIKE YOU', style: _kicker(color: _purple)),
+        Text(
+          'MAKE IT SOUND MORE LIKE YOU',
+          style: _kicker(color: _purple, weight: FontWeight.w600),
+        ),
         const SizedBox(height: 14),
         TextField(
           controller: controller,
-          minLines: MediaQuery.sizeOf(context).height < 700 ? 6 : 9,
-          maxLines: MediaQuery.sizeOf(context).height < 700 ? 9 : 13,
+          minLines: 9,
+          maxLines: 13,
           style: _lora(color: _ink, fontSize: 15, height: 1.5),
           decoration: InputDecoration(
             hintText: originalReflection,
@@ -1233,7 +1277,7 @@ class _ReflectionEditor extends StatelessWidget {
             contentPadding: const EdgeInsets.all(16),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xffded6e6)),
+              borderSide: BorderSide(color: _purple.withValues(alpha: 0.2)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -1251,14 +1295,18 @@ class _ReflectionEditor extends StatelessWidget {
           ),
           child: Text(
             'Restore original version',
-            style: _sans(color: const Color(0xffa89ec4), size: 12),
+            style: _sans(color: const Color(0xffa89ec4), size: 12, height: 1.5),
           ),
         ),
         const SizedBox(height: 15),
         Row(
           children: [
             Expanded(
-              child: _SecondaryButton(label: 'Cancel', onPressed: onCancel),
+              child: _SecondaryButton(
+                label: 'Cancel',
+                onPressed: onCancel,
+                textSize: 14,
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -1267,6 +1315,11 @@ class _ReflectionEditor extends StatelessWidget {
                 label: 'Save changes',
                 onPressed: onSave,
                 compact: true,
+                textStyle: const TextStyle(
+                  fontFamily: 'DMSans',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
@@ -1295,10 +1348,6 @@ class _CompletedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final count = flow.selections.length;
-    final screen = MediaQuery.sizeOf(context);
-    final compact = screen.height < 720;
-    final horizontal = screen.width < 360 ? 18.0 : 24.0;
-    final headerHeight = (screen.height * 0.22).clamp(132.0, 184.0);
     return ColoredBox(
       color: _surface,
       child: Column(
@@ -1307,51 +1356,66 @@ class _CompletedScreen extends StatelessWidget {
           const _BrandBar(),
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
-                horizontal,
-                4,
-                horizontal,
-                compact ? 14 : 20,
-              ),
+              padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _HeaderIllustration(height: headerHeight),
-                  SizedBox(height: compact ? 14 : 22),
+                  const _HeaderIllustration(
+                    height: 192,
+                    imagePath: 'assets/cozy-completed-header.png',
+                  ),
+                  const SizedBox(height: 22),
                   Text(_dateLabel(), style: _kicker()),
-                  SizedBox(height: compact ? 8 : 14),
+                  const SizedBox(height: 14),
                   Text(
                     "You're done reflecting",
-                    style: _display(size: compact ? 24 : 27),
+                    style: _display(size: 26, height: 1.25),
                   ),
                   Text(
                     'for today, $_userName.',
                     style: _display(
-                      size: compact ? 24 : 27,
+                      size: 26,
                       color: _purple,
                       italic: true,
+                      height: 1.25,
                     ),
                   ),
-                  SizedBox(height: compact ? 7 : 12),
+                  const SizedBox(height: 12),
                   Text(
                     'You took a moment to look back, notice what stood out, '
                     'and put your day into words. Nice work showing up for '
                     'yourself today.',
-                    style: _bodyStyle(size: 14),
+                    style: _bodyStyle(
+                      color: const Color(0xff6e6880),
+                      size: 14,
+                      height: 1.65,
+                    ),
                   ),
-                  SizedBox(height: compact ? 13 : 22),
+                  const SizedBox(height: 22),
                   _SoftCard(
                     padding: const EdgeInsets.fromLTRB(20, 21, 20, 17),
+                    borderRadius: 20,
+                    boxShadow: [
+                      BoxShadow(color: _purple.withValues(alpha: 0.07)),
+                      BoxShadow(
+                        color: _purple.withValues(alpha: 0.1),
+                        blurRadius: 16,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("TODAY'S REFLECTION", style: _kicker()),
+                        Text(
+                          "TODAY'S REFLECTION",
+                          style: _kicker(weight: FontWeight.w600),
+                        ),
                         const SizedBox(height: 13),
                         Text(
                           reflection,
                           maxLines: 5,
                           overflow: TextOverflow.ellipsis,
-                          style: _lora(color: _ink, fontSize: 15, height: 1.5),
+                          style: _lora(color: _ink, fontSize: 14, height: 1.65),
                         ),
                         const SizedBox(height: 14),
                         Wrap(
@@ -1378,6 +1442,11 @@ class _CompletedScreen extends StatelessWidget {
                                 label: 'Read full reflection',
                                 onPressed: onRead,
                                 compact: true,
+                                textStyle: const TextStyle(
+                                  fontFamily: 'DMSans',
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 9),
@@ -1392,19 +1461,17 @@ class _CompletedScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Center(
-                    child: TextButton.icon(
-                      onPressed: onAddThought,
-                      icon: const Icon(Icons.add, size: 16),
-                      label: const Text('Add another thought'),
-                      style: TextButton.styleFrom(foregroundColor: _purple),
-                    ),
+                  const SizedBox(height: 20),
+                  _GlimpseSummaryCard(
+                    sleep: _formatSleep(flow.context.sleepHours),
+                    steps: _formatNumber(flow.context.steps ?? 0),
+                    weather: _titleCase(flow.context.weather),
                   ),
                 ],
               ),
             ),
           ),
+          const _BottomNavigation(),
         ],
       ),
     );
@@ -1437,13 +1504,20 @@ class _MomentSheetState extends State<_MomentSheet> {
     return Container(
       padding: EdgeInsets.fromLTRB(
         24,
-        10,
+        12,
         24,
-        28 + MediaQuery.paddingOf(context).bottom,
+        40 + MediaQuery.paddingOf(context).bottom,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: _white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: _ink.withValues(alpha: 0.18),
+            blurRadius: 40,
+            offset: const Offset(0, -8),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1451,11 +1525,14 @@ class _MomentSheetState extends State<_MomentSheet> {
         children: [
           const _SheetHandle(),
           const SizedBox(height: 25),
-          Text(widget.clue.title.toUpperCase(), style: _kicker()),
+          Text(
+            widget.clue.title.toUpperCase(),
+            style: _kicker(weight: FontWeight.w600),
+          ),
           const SizedBox(height: 10),
           Text(
             'What did this bring to mind from your day?',
-            style: _serifTitle(size: 21),
+            style: _serifTitle(size: 20, height: 1.3),
           ),
           const SizedBox(height: 18),
           TextField(
@@ -1464,16 +1541,16 @@ class _MomentSheetState extends State<_MomentSheet> {
             minLines: 3,
             maxLines: 5,
             onChanged: (_) => setState(() {}),
-            style: _sans(color: _ink, size: 14),
+            style: _sans(color: _ink, size: 15),
             decoration: InputDecoration(
               hintText: 'A moment, feeling, person, task, or memory...',
-              hintStyle: _sans(color: const Color(0xffaaa3b4), size: 14),
+              hintStyle: _sans(color: _ink.withValues(alpha: 0.5), size: 15),
               filled: true,
               fillColor: _surface,
               contentPadding: const EdgeInsets.all(16),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(color: Color(0xffded6e6)),
+                borderSide: BorderSide(color: _purple.withValues(alpha: 0.18)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -1488,6 +1565,8 @@ class _MomentSheetState extends State<_MomentSheet> {
                 child: _SecondaryButton(
                   label: 'Cancel',
                   onPressed: () => Navigator.pop(context),
+                  textSize: 15,
+                  borderRadius: 14,
                 ),
               ),
               const SizedBox(width: 10),
@@ -1496,6 +1575,12 @@ class _MomentSheetState extends State<_MomentSheet> {
                 child: _PrimaryButton(
                   label: 'Save this moment',
                   compact: true,
+                  borderRadius: 14,
+                  textStyle: const TextStyle(
+                    fontFamily: 'DMSans',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                   onPressed: _controller.text.trim().isEmpty
                       ? null
                       : () => Navigator.pop(context, _controller.text.trim()),
@@ -1524,6 +1609,8 @@ class _GlimpseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return _SoftCard(
       padding: const EdgeInsets.fromLTRB(19, 19, 16, 18),
+      color: _white,
+      borderRadius: 20,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1544,7 +1631,7 @@ class _GlimpseCard extends StatelessWidget {
               ),
               const CircleAvatar(
                 radius: 15,
-                backgroundColor: _softPurple,
+                backgroundColor: Color(0xfff0ebf8),
                 child: Icon(
                   Icons.info_outline_rounded,
                   size: 16,
@@ -1604,49 +1691,51 @@ class _Metric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 2),
-        child: Column(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: _softPurple,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, color: color, size: 20),
+    return SizedBox(
+      width: 68,
+      child: Column(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: const Color(0xfff0ebf8),
+              borderRadius: BorderRadius.circular(14),
             ),
-            const SizedBox(height: 7),
-            Text(
-              label,
-              maxLines: 1,
-              style: _sans(color: _muted, size: 9, letterSpacing: 0.55),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 7),
+          Text(
+            label,
+            maxLines: 1,
+            style: _sans(color: _muted, size: 9, letterSpacing: 0.55),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            maxLines: 2,
+            textAlign: TextAlign.center,
+            style: _sans(
+              color: _ink,
+              size: 11.5,
+              weight: FontWeight.w700,
+              height: 1.15,
             ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              maxLines: 2,
-              textAlign: TextAlign.center,
-              style: _sans(
-                color: _ink,
-                size: 11.5,
-                weight: FontWeight.w700,
-                height: 1.15,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
 class _HeaderIllustration extends StatelessWidget {
-  const _HeaderIllustration({this.height = 192});
+  const _HeaderIllustration({
+    this.height = 192,
+    this.imagePath = 'assets/cozy_reflection_header.png',
+  });
 
   final double height;
+  final String imagePath;
 
   @override
   Widget build(BuildContext context) {
@@ -1655,10 +1744,7 @@ class _HeaderIllustration extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         height: height,
-        child: Image.asset(
-          'assets/cozy_reflection_header.png',
-          fit: BoxFit.cover,
-        ),
+        child: Image.asset(imagePath, fit: BoxFit.cover),
       ),
     );
   }
@@ -1722,48 +1808,90 @@ class _SystemTop extends StatelessWidget {
   }
 }
 
-class _BottomAlignedScroll extends StatelessWidget {
-  const _BottomAlignedScroll({required this.padding, required this.child});
+class _BottomNavigation extends StatefulWidget {
+  const _BottomNavigation();
 
-  final EdgeInsets padding;
-  final Widget child;
+  @override
+  State<_BottomNavigation> createState() => _BottomNavigationState();
+}
+
+class _BottomNavigationState extends State<_BottomNavigation> {
+  int _selected = 0;
 
   @override
   Widget build(BuildContext context) {
-    return _AlignedScroll(
-      alignment: Alignment.bottomCenter,
-      padding: padding,
-      child: child,
+    return Container(
+      height: 82 + MediaQuery.paddingOf(context).bottom,
+      padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+      color: _white,
+      child: Row(
+        children: [
+          Expanded(
+            child: _NavItem(
+              icon: Icons.calendar_today_outlined,
+              label: 'Today',
+              selected: _selected == 0,
+              onTap: () => setState(() => _selected = 0),
+            ),
+          ),
+          Expanded(
+            child: _NavItem(
+              icon: Icons.show_chart_rounded,
+              label: 'Patterns',
+              selected: _selected == 1,
+              onTap: () => setState(() => _selected = 1),
+            ),
+          ),
+          Expanded(
+            child: _NavItem(
+              icon: Icons.person_outline_rounded,
+              label: 'Profile',
+              selected: _selected == 2,
+              onTap: () => setState(() => _selected = 2),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _AlignedScroll extends StatelessWidget {
-  const _AlignedScroll({
-    required this.alignment,
-    required this.padding,
-    required this.child,
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.selected = false,
   });
 
-  final Alignment alignment;
-  final EdgeInsets padding;
-  final Widget child;
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final minHeight = constraints.maxHeight.isFinite
-            ? math.max(0.0, constraints.maxHeight - padding.vertical)
-            : 0.0;
-        return SingleChildScrollView(
-          padding: padding,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: minHeight),
-            child: Align(alignment: alignment, child: child),
+    final color = selected ? _purple : const Color(0xffc4b8d8);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: color, size: 21),
+          const SizedBox(height: 4),
+          Text(label, style: _sans(color: color, size: 11)),
+          const SizedBox(height: 6),
+          Container(
+            width: 4,
+            height: 4,
+            decoration: BoxDecoration(
+              color: selected ? _purple : Colors.transparent,
+              shape: BoxShape.circle,
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }
@@ -1781,7 +1909,118 @@ class _MetaItem extends StatelessWidget {
       children: [
         Icon(icon, size: 12, color: const Color(0xffa89ec4)),
         const SizedBox(width: 5),
-        Text(label, style: _sans(color: _muted, size: 11)),
+        Text(label, style: _sans(color: _muted, size: 12)),
+      ],
+    );
+  }
+}
+
+class _GlimpseSummaryCard extends StatelessWidget {
+  const _GlimpseSummaryCard({
+    required this.sleep,
+    required this.steps,
+    required this.weather,
+  });
+
+  final String sleep;
+  final String steps;
+  final String weather;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+      decoration: BoxDecoration(
+        color: _white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _purple.withValues(alpha: 0.07)),
+        boxShadow: [
+          BoxShadow(
+            color: _purple.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('A GLIMPSE OF THE DAY', style: _kicker(weight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _GlimpseStat(
+                  label: 'SLEEP',
+                  value: sleep,
+                  color: const Color(0xff8b7db8),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _GlimpseStat(
+                  label: 'STEPS',
+                  value: steps,
+                  color: const Color(0xff7a9bb5),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _GlimpseStat(
+                  label: 'WEATHER',
+                  value: weather,
+                  color: const Color(0xff7a9bb5),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _GlimpseStat(
+                  label: 'TIME',
+                  value: _clockTime(),
+                  color: const Color(0xffc4956a),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GlimpseStat extends StatelessWidget {
+  const _GlimpseStat({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: _sans(
+            color: _muted,
+            size: 10,
+            weight: FontWeight.w500,
+            letterSpacing: 0.7,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          value,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: _sans(color: color, size: 12, weight: FontWeight.w600),
+        ),
       ],
     );
   }
@@ -1792,44 +2031,78 @@ class _PrimaryButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.compact = false,
-    this.background = _purple,
+    this.gradient,
+    this.borderRadius,
+    this.textStyle,
+    this.borderColor,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final bool compact;
-  final Color background;
+  final Gradient? gradient;
+  final double? borderRadius;
+  final TextStyle? textStyle;
+  final Color? borderColor;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    final radius = borderRadius ?? (compact ? 12.0 : 16.0);
+    final button = SizedBox(
       width: double.infinity,
       height: compact ? 48 : 58,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: background,
+          backgroundColor: gradient != null ? Colors.transparent : _purple,
           disabledBackgroundColor: const Color(0xffd4cfe4),
           foregroundColor: Colors.white,
           disabledForegroundColor: const Color(0xffa8a0bc),
-          elevation: onPressed == null ? 0 : 4,
+          elevation: (onPressed == null || gradient != null) ? 0 : 4,
           shadowColor: _purple.withValues(alpha: 0.32),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(compact ? 12 : 16),
+            borderRadius: BorderRadius.circular(radius),
           ),
-          textStyle: _sans(size: compact ? 13 : 15, weight: FontWeight.w700),
+          textStyle:
+              textStyle ??
+              _sans(size: compact ? 13 : 15, weight: FontWeight.w700),
         ),
         child: Text(label),
       ),
+    );
+
+    if (gradient == null) return button;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(radius),
+        border: borderColor != null ? Border.all(color: borderColor!) : null,
+        boxShadow: [
+          BoxShadow(
+            color: _purple.withValues(alpha: 0.32),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: button,
     );
   }
 }
 
 class _SecondaryButton extends StatelessWidget {
-  const _SecondaryButton({required this.label, required this.onPressed});
+  const _SecondaryButton({
+    required this.label,
+    required this.onPressed,
+    this.textSize = 13,
+    this.borderRadius = 12,
+  });
 
   final String label;
   final VoidCallback onPressed;
+  final double textSize;
+  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -1843,9 +2116,9 @@ class _SecondaryButton extends StatelessWidget {
           foregroundColor: const Color(0xff4a4260),
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(borderRadius),
           ),
-          textStyle: _sans(size: 13, weight: FontWeight.w500),
+          textStyle: _sans(size: textSize, weight: FontWeight.w500),
         ),
         child: Text(label),
       ),
@@ -1859,21 +2132,25 @@ class _RoundButton extends StatelessWidget {
     required this.onPressed,
     this.light = false,
     this.size = 36,
+    this.fillOpacity = 0.12,
+    this.showBorder = false,
   });
 
   final IconData icon;
   final VoidCallback onPressed;
   final bool light;
   final double size;
+  final double fillOpacity;
+  final bool showBorder;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    final button = SizedBox(
       width: size,
       height: size,
       child: Material(
         color: light
-            ? Colors.white.withValues(alpha: 0.12)
+            ? Colors.white.withValues(alpha: fillOpacity)
             : const Color(0xffede9f5),
         shape: const CircleBorder(),
         child: InkWell(
@@ -1887,14 +2164,33 @@ class _RoundButton extends StatelessWidget {
         ),
       ),
     );
+
+    if (!showBorder) return button;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+      ),
+      child: button,
+    );
   }
 }
 
 class _SoftCard extends StatelessWidget {
-  const _SoftCard({required this.child, required this.padding});
+  const _SoftCard({
+    required this.child,
+    required this.padding,
+    this.color = _cream,
+    this.borderRadius = 21,
+    this.boxShadow,
+  });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
+  final Color color;
+  final double borderRadius;
+  final List<BoxShadow>? boxShadow;
 
   @override
   Widget build(BuildContext context) {
@@ -1902,15 +2198,17 @@ class _SoftCard extends StatelessWidget {
       width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
-        color: _cream,
-        borderRadius: BorderRadius.circular(21),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x147b6a9e),
-            blurRadius: 18,
-            offset: Offset(0, 7),
-          ),
-        ],
+        color: color,
+        borderRadius: BorderRadius.circular(borderRadius),
+        boxShadow:
+            boxShadow ??
+            const [
+              BoxShadow(
+                color: Color(0x147b6a9e),
+                blurRadius: 18,
+                offset: Offset(0, 7),
+              ),
+            ],
       ),
       child: child,
     );
@@ -1924,10 +2222,10 @@ class _SheetHandle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        width: 39,
+        width: 40,
         height: 4,
         decoration: BoxDecoration(
-          color: const Color(0xffd9d1ed),
+          color: const Color(0xffd4cfe8),
           borderRadius: BorderRadius.circular(5),
         ),
       ),
@@ -1970,7 +2268,7 @@ class _AnimatedDotsState extends State<_AnimatedDots>
                       ((math.sin(_controller.value * math.pi * 2 - i) + 1) / 2),
               child: const CircleAvatar(radius: 5, backgroundColor: _purple),
             ),
-            if (i < 2) const SizedBox(width: 10),
+            if (i < 2) const SizedBox(width: 12),
           ],
         ],
       ),
@@ -2001,11 +2299,12 @@ TextStyle _display({
   Color color = _ink,
   double size = 29,
   bool italic = false,
+  double height = 1.12,
 }) {
   return _lora(
     color: color,
     fontSize: size,
-    height: 1.12,
+    height: height,
     fontWeight: FontWeight.w500,
     fontStyle: italic ? FontStyle.italic : FontStyle.normal,
   );
@@ -2053,12 +2352,17 @@ TextStyle _bodyStyle({
   return _sans(color: color, size: size, height: height);
 }
 
-TextStyle _kicker({Color color = _muted, double size = 11}) {
+TextStyle _kicker({
+  Color color = _muted,
+  double size = 11,
+  FontWeight weight = FontWeight.w700,
+  double letterSpacing = 1.1,
+}) {
   return _sans(
     color: color,
     size: size,
-    weight: FontWeight.w700,
-    letterSpacing: 1.1,
+    weight: weight,
+    letterSpacing: letterSpacing,
   );
 }
 
