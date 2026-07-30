@@ -21,14 +21,12 @@ class ContextPreviewScreen extends ConsumerWidget {
     final ctx = flow.context;
 
     final sleepH = ctx.sleepHours ?? 0;
-    final sleepFormatted =
-        '${sleepH.floor()}h ${((sleepH % 1) * 60).round()}m';
+    final sleepFormatted = '${sleepH.floor()}h ${((sleepH % 1) * 60).round()}m';
     final steps = ctx.steps ?? 0;
     final stepsFormatted =
         '${steps.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')} steps';
     final weatherDisplay = ctx.weather.isNotEmpty
-        ? ctx.weather[0].toUpperCase() +
-            ctx.weather.substring(1).toLowerCase()
+        ? ctx.weather[0].toUpperCase() + ctx.weather.substring(1).toLowerCase()
         : 'Clear';
 
     final now = TimeOfDay.now();
@@ -70,8 +68,11 @@ class ContextPreviewScreen extends ConsumerWidget {
                     ),
                   ),
                   child: const Center(
-                    child: Icon(Icons.nightlight_round,
-                        size: 48, color: Color(0xFF7F6A9D)),
+                    child: Icon(
+                      Icons.nightlight_round,
+                      size: 48,
+                      color: Color(0xFF7F6A9D),
+                    ),
                   ),
                 ),
               ),
@@ -237,10 +238,7 @@ class ContextPreviewScreen extends ConsumerWidget {
             children: [
               const Text(
                 'Simulated profile: ',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF94A3B8),
-                ),
+                style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
               ),
               Expanded(
                 child: SingleChildScrollView(
@@ -284,10 +282,7 @@ class ContextPreviewScreen extends ConsumerWidget {
               icon: const Icon(Icons.add, size: 20),
               label: const Text(
                 'Explore my day',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
               ),
             ),
           ),
@@ -348,8 +343,7 @@ class ContextPreviewScreen extends ConsumerWidget {
       onTap: () =>
           ref.read(activeProfileProvider.notifier).selectByLabel(label),
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: isSelected
               ? color.withValues(alpha: 0.15)
@@ -364,7 +358,11 @@ class ContextPreviewScreen extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 12, color: isSelected ? color : const Color(0xFF8E8899)),
+            Icon(
+              icon,
+              size: 12,
+              color: isSelected ? color : const Color(0xFF8E8899),
+            ),
             const SizedBox(width: 5),
             Text(
               label,

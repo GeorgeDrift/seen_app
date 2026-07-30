@@ -72,45 +72,53 @@ class PatternEngine {
       final isShortSleep =
           entry.context.sleepHours != null && entry.context.sleepHours! < 6.5;
       if (isShortSleep) shortSleepDays++;
-      final has = entry.selectedClues.any((s) =>
-          s.clueId == 'quiet_corner_01' &&
-          (s.userMeaning?.toLowerCase().contains('restorative') == true ||
-              s.userMeaning?.toLowerCase().contains('recovery') == true));
+      final has = entry.selectedClues.any(
+        (s) =>
+            s.clueId == 'quiet_corner_01' &&
+            (s.userMeaning?.toLowerCase().contains('restorative') == true ||
+                s.userMeaning?.toLowerCase().contains('recovery') == true),
+      );
       if (isShortSleep && has) quietCornerRestorative++;
     }
     if (shortSleepDays > 0) {
-      out.add(PatternInsight(
-        title: 'Quiet Solitude on Short Sleep Days',
-        description:
-            'On $quietCornerRestorative of the $shortSleepDays days with short sleep (<6.5h), you selected Quiet Corner as restorative.',
-        tag: 'Restorative Solitude',
-        color: AppColors.primary,
-        count: quietCornerRestorative,
-        total: shortSleepDays,
-      ));
+      out.add(
+        PatternInsight(
+          title: 'Quiet Solitude on Short Sleep Days',
+          description:
+              'On $quietCornerRestorative of the $shortSleepDays days with short sleep (<6.5h), you selected Quiet Corner as restorative.',
+          tag: 'Restorative Solitude',
+          color: AppColors.primary,
+          count: quietCornerRestorative,
+          total: shortSleepDays,
+        ),
+      );
     }
 
     // 2. Heavy workload + meeting overload marked draining
     var heavyDays = 0;
     var meetingDraining = 0;
     for (final entry in historical) {
-      final isHeavy = entry.context.calendarLoad == 'high' ||
+      final isHeavy =
+          entry.context.calendarLoad == 'high' ||
           entry.context.calendarEventCount >= 6;
       if (isHeavy) heavyDays++;
-      final has = entry.selectedClues.any((s) =>
-          s.clueId == 'meeting_overload_01' && s.userMeaning == 'Draining');
+      final has = entry.selectedClues.any(
+        (s) => s.clueId == 'meeting_overload_01' && s.userMeaning == 'Draining',
+      );
       if (isHeavy && has) meetingDraining++;
     }
     if (heavyDays > 0) {
-      out.add(PatternInsight(
-        title: 'Schedule Density & Energy Drain',
-        description:
-            'Meeting Overload was marked as "Draining" on $meetingDraining of $heavyDays high-density calendar days.',
-        tag: 'Workload Drain',
-        color: AppColors.calendar,
-        count: meetingDraining,
-        total: heavyDays,
-      ));
+      out.add(
+        PatternInsight(
+          title: 'Schedule Density & Energy Drain',
+          description:
+              'Meeting Overload was marked as "Draining" on $meetingDraining of $heavyDays high-density calendar days.',
+          tag: 'Workload Drain',
+          color: AppColors.calendar,
+          count: meetingDraining,
+          total: heavyDays,
+        ),
+      );
     }
 
     // 3. High steps + walking shoes marked head-clearing
@@ -120,21 +128,25 @@ class PatternEngine {
       final isHighMove =
           entry.context.steps != null && entry.context.steps! > 8000;
       if (isHighMove) highMoveDays++;
-      final has = entry.selectedClues.any((s) =>
-          s.clueId == 'walking_shoes_01' &&
-          s.userMeaning?.toLowerCase().contains('workout') == true);
+      final has = entry.selectedClues.any(
+        (s) =>
+            s.clueId == 'walking_shoes_01' &&
+            s.userMeaning?.toLowerCase().contains('workout') == true,
+      );
       if (isHighMove && has) workoutHeadClear++;
     }
     if (highMoveDays > 0) {
-      out.add(PatternInsight(
-        title: 'Active Movement for Mindset',
-        description:
-            'On $workoutHeadClear of $highMoveDays high-step days (>8k steps), walking/running was marked as "Workout to clear head".',
-        tag: 'Active Recovery',
-        color: AppColors.steps,
-        count: workoutHeadClear,
-        total: highMoveDays,
-      ));
+      out.add(
+        PatternInsight(
+          title: 'Active Movement for Mindset',
+          description:
+              'On $workoutHeadClear of $highMoveDays high-step days (>8k steps), walking/running was marked as "Workout to clear head".',
+          tag: 'Active Recovery',
+          color: AppColors.steps,
+          count: workoutHeadClear,
+          total: highMoveDays,
+        ),
+      );
     }
 
     return out;

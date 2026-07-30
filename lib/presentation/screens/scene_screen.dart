@@ -71,7 +71,9 @@ class _SceneIntro extends StatelessWidget {
                   child: SafeArea(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 12),
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
                       child: Row(
                         children: [
                           GestureDetector(
@@ -181,15 +183,15 @@ class _SceneIntro extends StatelessWidget {
                     color: const Color(0xFF1A1A2E),
                     borderRadius: BorderRadius.circular(18),
                     border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.07)),
+                      color: Colors.white.withValues(alpha: 0.07),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.add,
-                              size: 15, color: Color(0xFFC4B5FD)),
+                          Icon(Icons.add, size: 15, color: Color(0xFFC4B5FD)),
                           SizedBox(width: 8),
                           Text(
                             'How this works',
@@ -218,7 +220,8 @@ class _SceneIntro extends StatelessWidget {
                           color: const Color(0xFF13102A),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.06)),
+                            color: Colors.white.withValues(alpha: 0.06),
+                          ),
                         ),
                         child: const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -266,7 +269,9 @@ class _SceneIntro extends StatelessWidget {
                     label: const Text(
                       'Enter the scene',
                       style: TextStyle(
-                          fontWeight: FontWeight.w700, fontSize: 16),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ),
@@ -286,8 +291,7 @@ class _SceneCanvasScreen extends ConsumerStatefulWidget {
   final VoidCallback onBack;
 
   @override
-  ConsumerState<_SceneCanvasScreen> createState() =>
-      _SceneCanvasScreenState();
+  ConsumerState<_SceneCanvasScreen> createState() => _SceneCanvasScreenState();
 }
 
 class _SceneCanvasScreenState extends ConsumerState<_SceneCanvasScreen>
@@ -323,8 +327,7 @@ class _SceneCanvasScreenState extends ConsumerState<_SceneCanvasScreen>
         children: [
           // ── Top Bar ────────────────────────────────────────────────────
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
                 GestureDetector(
@@ -336,7 +339,8 @@ class _SceneCanvasScreenState extends ConsumerState<_SceneCanvasScreen>
                       color: Colors.white.withValues(alpha: 0.08),
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.12)),
+                        color: Colors.white.withValues(alpha: 0.12),
+                      ),
                     ),
                     child: const Icon(
                       Icons.arrow_back_ios_new_rounded,
@@ -349,19 +353,24 @@ class _SceneCanvasScreenState extends ConsumerState<_SceneCanvasScreen>
                 // Moments found pill
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 7),
+                    horizontal: 14,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF7F6A9D).withValues(alpha: 0.18),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                        color:
-                            const Color(0xFF7F6A9D).withValues(alpha: 0.4)),
+                      color: const Color(0xFF7F6A9D).withValues(alpha: 0.4),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.check_circle,
-                          size: 13, color: Color(0xFFC4B5FD)),
+                      const Icon(
+                        Icons.check_circle,
+                        size: 13,
+                        color: Color(0xFFC4B5FD),
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         '$selectionCount moment${selectionCount == 1 ? '' : 's'} found',
@@ -385,7 +394,8 @@ class _SceneCanvasScreenState extends ConsumerState<_SceneCanvasScreen>
                       color: Colors.white.withValues(alpha: 0.08),
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.12)),
+                        color: Colors.white.withValues(alpha: 0.12),
+                      ),
                     ),
                     child: const Icon(
                       Icons.help_outline_rounded,
@@ -446,8 +456,11 @@ class _SceneCanvasScreenState extends ConsumerState<_SceneCanvasScreen>
                           errorBuilder: (context, error, stack) => Container(
                             color: const Color(0xFF1A1230),
                             child: const Center(
-                              child: Icon(Icons.image_not_supported,
-                                  color: Colors.white38, size: 48),
+                              child: Icon(
+                                Icons.image_not_supported,
+                                color: Colors.white38,
+                                size: 48,
+                              ),
                             ),
                           ),
                         ),
@@ -473,18 +486,20 @@ class _SceneCanvasScreenState extends ConsumerState<_SceneCanvasScreen>
                                       // Pulse ring for unselected
                                       if (!isSelected)
                                         Container(
-                                          width: 44 +
-                                              (_pulseController.value * 6),
-                                          height: 44 +
-                                              (_pulseController.value * 6),
+                                          width:
+                                              44 + (_pulseController.value * 6),
+                                          height:
+                                              44 + (_pulseController.value * 6),
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             color: const Color(0xFF7F6A9D)
                                                 .withValues(
-                                                    alpha: 0.15 *
-                                                        (1 -
-                                                            _pulseController
-                                                                .value)),
+                                                  alpha:
+                                                      0.15 *
+                                                      (1 -
+                                                          _pulseController
+                                                              .value),
+                                                ),
                                           ),
                                         ),
                                       Container(
@@ -494,12 +509,14 @@ class _SceneCanvasScreenState extends ConsumerState<_SceneCanvasScreen>
                                           shape: BoxShape.circle,
                                           color: isSelected
                                               ? const Color(0xFF7F6A9D)
-                                              : const Color(0xFF7F6A9D)
-                                                  .withValues(alpha: 0.5),
+                                              : const Color(
+                                                  0xFF7F6A9D,
+                                                ).withValues(alpha: 0.5),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: const Color(0xFF7F6A9D)
-                                                  .withValues(alpha: 0.4),
+                                              color: const Color(
+                                                0xFF7F6A9D,
+                                              ).withValues(alpha: 0.4),
                                               blurRadius: 8,
                                             ),
                                           ],
@@ -530,8 +547,7 @@ class _SceneCanvasScreenState extends ConsumerState<_SceneCanvasScreen>
           // ── Bottom Bar ─────────────────────────────────────────────────
           Container(
             color: const Color(0xFFF9F7FE),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
               children: [
                 const Text(

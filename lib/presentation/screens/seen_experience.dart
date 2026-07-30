@@ -6,9 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/clue.dart';
 import '../../data/models/clue_selection.dart';
-import '../../domain/engine/summary_engine.dart';
 import '../controllers/day_flow_controller.dart';
-import '../controllers/summary_controller.dart';
+import '../providers/api_providers.dart';
 
 const _ink = Color(0xff2a2733);
 const _muted = Color(0xff8a849a);
@@ -31,6 +30,7 @@ class SeenExperience extends ConsumerStatefulWidget {
 class _SeenExperienceState extends ConsumerState<SeenExperience> {
   _JourneyPage _page = _JourneyPage.welcome;
   bool _editing = false;
+  bool _saving = false;
   String _reflection = _fallbackReflection;
   String _originalReflection = _fallbackReflection;
   final TextEditingController _editController = TextEditingController();
@@ -106,23 +106,31 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
     if (flow.selections.isEmpty) return;
 
     _go(_JourneyPage.preparing);
-    await Future.wait<void>([
-      ref.read(dailySummaryControllerProvider.notifier).commit(),
-      Future<void>.delayed(const Duration(milliseconds: 1800)),
-    ]);
+
+    final repo = ref.read(seenRepositoryProvider);
+    final moments = flow.selections
+        .map(
+          (s) => {
+            'clueId': s.clueId,
+            'clueTitle': s.clueTitle,
+            'text': s.userMeaning ?? s.answerOption ?? '',
+          },
+        )
+        .toList();
+
+    final reflectionFuture = repo.generateReflection(
+      context: flow.context,
+      interpretedSignals: flow.signals,
+      moments: moments,
+    );
+    final minDelay = Future<void>.delayed(const Duration(milliseconds: 1800));
+    final reflection = await reflectionFuture;
+    await minDelay;
     if (!mounted) return;
 
-    final summaryState = ref.read(dailySummaryControllerProvider);
-    final generated = summaryState.maybeWhen(
-      data: (entry) => entry?.generatedSummary,
-      orElse: () => null,
-    );
-    final local = const SummaryEngine().buildLocal(
-      ref.read(dayFlowControllerProvider).selections,
-    );
-    final next = (generated != null && generated.trim().isNotEmpty)
-        ? generated.trim()
-        : (local.trim().isNotEmpty ? local.trim() : _fallbackReflection);
+    final next = reflection.text.trim().isNotEmpty
+        ? reflection.text.trim()
+        : _fallbackReflection;
 
     setState(() {
       _originalReflection = next;
@@ -153,6 +161,26 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
     setState(() {
       if (edited.isNotEmpty) _reflection = edited;
       _editing = false;
+    });
+  }
+
+  Future<void> _saveReflection() async {
+    if (_saving) return;
+    setState(() => _saving = true);
+
+    final repo = ref.read(seenRepositoryProvider);
+    final flow = ref.read(dayFlowControllerProvider);
+    await repo.completeDay(
+      context: flow.context,
+      interpretedSignals: flow.signals,
+      displayedClueIds: flow.scene.visibleClues.map((c) => c.id).toList(),
+      selectedClues: flow.selections,
+    );
+    if (!mounted) return;
+
+    setState(() {
+      _saving = false;
+      _page = _JourneyPage.completed;
     });
   }
 
@@ -188,13 +216,14 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
         originalReflection: _originalReflection,
         editController: _editController,
         editing: _editing,
+        saving: _saving,
         onBack: () => _go(_JourneyPage.moments),
         onEdit: _beginEditing,
         onCancel: _cancelEditing,
         onRestore: () =>
             setState(() => _editController.text = _originalReflection),
         onSaveChanges: _saveChanges,
-        onSaveReflection: () => _go(_JourneyPage.completed),
+        onSaveReflection: _saveReflection,
       ),
       _JourneyPage.completed => _CompletedScreen(
         key: const ValueKey('completed'),
@@ -214,12 +243,12 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: const Color(0xffded9e7),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 430),
-            child: DecoratedBox(
-              decoration: const BoxDecoration(color: _surface),
+        backgroundColor: _surface,
+        body: DecoratedBox(
+          decoration: const BoxDecoration(color: _surface),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 700),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 360),
                 switchInCurve: Curves.easeOutCubic,
@@ -583,10 +612,22 @@ class _MomentsScreen extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: _SceneImage(
-              clues: flow.scene.visibleClues,
-              selectedIds: selectedIds,
-              onSelect: onSelect,
+            child: SingleChildScrollView(
+              child: AspectRatio(
+                // Matches cozy_bedroom_scene.png's native 1:1 dimensions so
+                // the full image always shows at a consistent scale — an
+                // Expanded box alone stretches to fill arbitrary leftover
+                // height (which shrinks whenever the keyboard opens for the
+                // moment-capture sheet), and BoxFit.cover on a mismatched
+                // aspect ratio crops the sides, throwing off hotspot
+                // alignment and hiding some objects entirely.
+                aspectRatio: 1,
+                child: _SceneImage(
+                  clues: flow.scene.visibleClues,
+                  selectedIds: selectedIds,
+                  onSelect: onSelect,
+                ),
+              ),
             ),
           ),
           Container(
@@ -814,6 +855,7 @@ class _ReflectionScreen extends StatelessWidget {
     required this.originalReflection,
     required this.editController,
     required this.editing,
+    this.saving = false,
     required this.onBack,
     required this.onEdit,
     required this.onCancel,
@@ -826,6 +868,7 @@ class _ReflectionScreen extends StatelessWidget {
   final String originalReflection;
   final TextEditingController editController;
   final bool editing;
+  final bool saving;
   final VoidCallback onBack;
   final VoidCallback onEdit;
   final VoidCallback onCancel;
@@ -952,8 +995,8 @@ class _ReflectionScreen extends StatelessWidget {
               child: Column(
                 children: [
                   _PrimaryButton(
-                    label: 'Save reflection',
-                    onPressed: onSaveReflection,
+                    label: saving ? 'Saving…' : 'Save reflection',
+                    onPressed: saving ? null : onSaveReflection,
                   ),
                   const SizedBox(height: 10),
                   TextButton(

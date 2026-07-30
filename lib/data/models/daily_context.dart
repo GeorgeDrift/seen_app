@@ -24,7 +24,8 @@ class DailyContext {
   final int calendarEventCount;
   final String calendarLoad; // 'low' | 'moderate' | 'high'
   final String weather; // 'sunny' | 'cloudy' | 'rain' | 'snow' | 'hot' | 'cold'
-  final String locationPattern; // 'mostly_home' | 'mostly_out' | 'mixed' | 'unknown'
+  final String
+  locationPattern; // 'mostly_home' | 'mostly_out' | 'mixed' | 'unknown'
 
   DailyContext copyWith({
     String? date,
@@ -51,26 +52,26 @@ class DailyContext {
   }
 
   factory DailyContext.fromJson(Map<String, dynamic> json) => DailyContext(
-        date: json['date'] as String,
-        sleepHours: (json['sleepHours'] as num?)?.toDouble(),
-        sleepComparison: json['sleepComparison'] as String? ?? 'unknown',
-        steps: json['steps'] as int?,
-        activityComparison: json['activityComparison'] as String? ?? 'unknown',
-        calendarEventCount: json['calendarEventCount'] as int? ?? 0,
-        calendarLoad: json['calendarLoad'] as String? ?? 'low',
-        weather: json['weather'] as String? ?? 'cloudy',
-        locationPattern: json['locationPattern'] as String? ?? 'unknown',
-      );
+    date: json['date'] as String,
+    sleepHours: (json['sleepHours'] as num?)?.toDouble(),
+    sleepComparison: json['sleepComparison'] as String? ?? 'unknown',
+    steps: json['steps'] as int?,
+    activityComparison: json['activityComparison'] as String? ?? 'unknown',
+    calendarEventCount: json['calendarEventCount'] as int? ?? 0,
+    calendarLoad: json['calendarLoad'] as String? ?? 'low',
+    weather: json['weather'] as String? ?? 'cloudy',
+    locationPattern: json['locationPattern'] as String? ?? 'unknown',
+  );
 
   Map<String, dynamic> toJson() => {
-        'date': date,
-        'sleepHours': sleepHours,
-        'sleepComparison': sleepComparison,
-        'steps': steps,
-        'activityComparison': activityComparison,
-        'calendarEventCount': calendarEventCount,
-        'calendarLoad': calendarLoad,
-        'weather': weather,
-        'locationPattern': locationPattern,
-      };
+    'date': date,
+    'sleepHours': sleepHours,
+    'sleepComparison': sleepComparison,
+    'steps': steps,
+    'activityComparison': activityComparison,
+    'calendarEventCount': calendarEventCount,
+    'calendarLoad': calendarLoad,
+    'weather': weather,
+    'locationPattern': locationPattern,
+  };
 }

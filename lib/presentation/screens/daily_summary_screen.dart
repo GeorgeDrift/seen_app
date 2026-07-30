@@ -32,9 +32,10 @@ class _DailySummaryScreenState extends ConsumerState<DailySummaryScreen> {
     final localSummary = const SummaryEngine().buildLocal(selections);
     final summary = asyncEntry.maybeWhen(
       data: (entry) =>
-          (entry?.generatedSummary != null && entry!.generatedSummary.isNotEmpty)
-              ? entry.generatedSummary
-              : (localSummary.isNotEmpty ? localSummary : defaultSummaryText),
+          (entry?.generatedSummary != null &&
+              entry!.generatedSummary.isNotEmpty)
+          ? entry.generatedSummary
+          : (localSummary.isNotEmpty ? localSummary : defaultSummaryText),
       orElse: () => localSummary.isNotEmpty ? localSummary : defaultSummaryText,
     );
     final isLoading = asyncEntry.isLoading;
@@ -69,8 +70,11 @@ class _DailySummaryScreenState extends ConsumerState<DailySummaryScreen> {
                   return Container(
                     color: const Color(0xFF7C6A9B).withValues(alpha: 0.3),
                     child: const Center(
-                      child: Icon(Icons.nightlight_round,
-                          size: 48, color: AppColors.lavender),
+                      child: Icon(
+                        Icons.nightlight_round,
+                        size: 48,
+                        color: AppColors.lavender,
+                      ),
                     ),
                   );
                 },
@@ -299,16 +303,18 @@ class _DailySummaryScreenState extends ConsumerState<DailySummaryScreen> {
                   Text(
                     'Annotated Clues (${selections.length}):',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   if (selections.isEmpty)
                     const Text(
                       'No specific clues selected today.',
                       style: TextStyle(
-                          color: AppColors.textSecondary, fontSize: 13),
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
                     )
                   else
                     ListView.separated(
@@ -321,7 +327,9 @@ class _DailySummaryScreenState extends ConsumerState<DailySummaryScreen> {
                         final item = selections[index];
                         return Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 10),
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(10),
@@ -331,8 +339,11 @@ class _DailySummaryScreenState extends ConsumerState<DailySummaryScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(Icons.check_circle,
-                                      color: AppColors.primary, size: 16),
+                                  const Icon(
+                                    Icons.check_circle,
+                                    color: AppColors.primary,
+                                    size: 16,
+                                  ),
                                   const SizedBox(width: 8),
                                   Text(
                                     item.clueTitle,
@@ -359,8 +370,11 @@ class _DailySummaryScreenState extends ConsumerState<DailySummaryScreen> {
                   const SizedBox(height: 16),
                   const Row(
                     children: [
-                      Icon(Icons.privacy_tip_outlined,
-                          size: 14, color: AppColors.sage),
+                      Icon(
+                        Icons.privacy_tip_outlined,
+                        size: 14,
+                        color: AppColors.sage,
+                      ),
                       SizedBox(width: 6),
                       Expanded(
                         child: Text(
@@ -384,9 +398,12 @@ class _DailySummaryScreenState extends ConsumerState<DailySummaryScreen> {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 14),
+                  horizontal: 20,
+                  vertical: 14,
+                ),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
               onPressed: () => ref
                   .read(patientStepProvider.notifier)

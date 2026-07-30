@@ -11,7 +11,8 @@ import 'day_flow_controller.dart';
 /// the widget code stays declarative.
 final dailySummaryControllerProvider =
     AsyncNotifierProvider<DailySummaryController, DailyEntry?>(
-        DailySummaryController.new);
+      DailySummaryController.new,
+    );
 
 class DailySummaryController extends AsyncNotifier<DailyEntry?> {
   @override
@@ -29,8 +30,7 @@ class DailySummaryController extends AsyncNotifier<DailyEntry?> {
       final entry = await repo.completeDay(
         context: flow.context,
         interpretedSignals: flow.signals,
-        displayedClueIds:
-            flow.scene.visibleClues.map((c) => c.id).toList(),
+        displayedClueIds: flow.scene.visibleClues.map((c) => c.id).toList(),
         selectedClues: flow.selections,
       );
       state = AsyncValue.data(entry);

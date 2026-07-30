@@ -35,19 +35,24 @@ class TherapistPortalScreen extends ConsumerWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color:
-                              AppColors.primary.withValues(alpha: 0.4)),
+                        color: AppColors.primary.withValues(alpha: 0.4),
+                      ),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.medical_services_outlined,
-                            size: 12, color: AppColors.primary),
+                        Icon(
+                          Icons.medical_services_outlined,
+                          size: 12,
+                          color: AppColors.primary,
+                        ),
                         SizedBox(width: 4),
                         Text(
                           'CLINICIAN PORTAL VIEW',
@@ -65,10 +70,10 @@ class TherapistPortalScreen extends ConsumerWidget {
                   Text(
                     'Patient Clinical Insights',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                          fontSize: 20,
-                        ),
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                      fontSize: 20,
+                    ),
                   ),
                 ],
               ),
@@ -78,7 +83,8 @@ class TherapistPortalScreen extends ConsumerWidget {
                   color: Colors.white.withValues(alpha: 0.04),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.08)),
+                    color: Colors.white.withValues(alpha: 0.08),
+                  ),
                 ),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
@@ -96,13 +102,17 @@ class TherapistPortalScreen extends ConsumerWidget {
                         Text(
                           'Alex Morgan',
                           style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white),
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                         Text(
                           '#P-4089 • Active',
-                          style: TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
                       ],
                     ),
@@ -127,13 +137,20 @@ class TherapistPortalScreen extends ConsumerWidget {
                     const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.insights,
-                            color: AppColors.primary, size: 18),
+                        Icon(
+                          Icons.insights,
+                          color: AppColors.primary,
+                          size: 18,
+                        ),
                         SizedBox(width: 8),
                         Flexible(
                           child: Text(
                             'Self-Reported vs. Telemetry',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                       ],
@@ -141,9 +158,10 @@ class TherapistPortalScreen extends ConsumerWidget {
                     const Text(
                       '14-Day Dataset',
                       style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.sage,
-                          fontWeight: FontWeight.bold),
+                        fontSize: 11,
+                        color: AppColors.sage,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -151,12 +169,12 @@ class TherapistPortalScreen extends ConsumerWidget {
                 Text(
                   'Crucial distinction: Passive data records "low activity", but patient annotations clarify this is restorative solitude rather than depressive withdrawal.',
                   style: TextStyle(
-                      fontSize: 12.5,
-                      color: Colors.grey[300],
-                      height: 1.4),
+                    fontSize: 12.5,
+                    color: Colors.grey[300],
+                    height: 1.4,
+                  ),
                 ),
-                const Divider(
-                    height: 24, color: AppColors.borderTranslucent),
+                const Divider(height: 24, color: AppColors.borderTranslucent),
                 ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -168,8 +186,11 @@ class TherapistPortalScreen extends ConsumerWidget {
                     return Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.check_circle,
-                            size: 16, color: AppColors.primary),
+                        const Icon(
+                          Icons.check_circle,
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Column(
@@ -178,16 +199,18 @@ class TherapistPortalScreen extends ConsumerWidget {
                               Text(
                                 p.title,
                                 style: const TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 p.description,
                                 style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[400]),
+                                  fontSize: 12,
+                                  color: Colors.grey[400],
+                                ),
                               ),
                             ],
                           ),
@@ -208,30 +231,39 @@ class TherapistPortalScreen extends ConsumerWidget {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.privacy_tip_outlined,
-                        color: AppColors.sage, size: 18),
+                    Icon(
+                      Icons.privacy_tip_outlined,
+                      color: AppColors.sage,
+                      size: 18,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Data Minimization & Privacy Audit Log',
                       style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
                 _buildPrivacyCheckItem(
-                    'Raw Calendar Event Titles & Attendees',
-                    'NOT STORED (Converted to load index only)'),
+                  'Raw Calendar Event Titles & Attendees',
+                  'NOT STORED (Converted to load index only)',
+                ),
                 _buildPrivacyCheckItem(
-                    'Exact GPS Coordinates & Location Logs',
-                    'NOT STORED (Converted to pattern tags only)'),
+                  'Exact GPS Coordinates & Location Logs',
+                  'NOT STORED (Converted to pattern tags only)',
+                ),
                 _buildPrivacyCheckItem(
-                    'Raw Microphone / Audio Recordings', 'NOT COLLECTED'),
+                  'Raw Microphone / Audio Recordings',
+                  'NOT COLLECTED',
+                ),
                 _buildPrivacyCheckItem(
-                    'Clinical Diagnosis Claims',
-                    'BLOCKED (Engine restricts output to associations only)'),
+                  'Clinical Diagnosis Claims',
+                  'BLOCKED (Engine restricts output to associations only)',
+                ),
               ],
             ),
           ),
@@ -251,38 +283,50 @@ class TherapistPortalScreen extends ConsumerWidget {
                     const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.description_outlined,
-                            color: AppColors.lavender, size: 18),
+                        Icon(
+                          Icons.description_outlined,
+                          color: AppColors.lavender,
+                          size: 18,
+                        ),
                         SizedBox(width: 8),
                         Text(
                           'EHR Session Note',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            AppColors.lavender.withValues(alpha: 0.2),
+                        backgroundColor: AppColors.lavender.withValues(
+                          alpha: 0.2,
+                        ),
                         foregroundColor: AppColors.lavender,
                         elevation: 0,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                       ),
                       onPressed: () {
-                        Clipboard.setData(
-                            ClipboardData(text: ehrSummary));
+                        Clipboard.setData(ClipboardData(text: ehrSummary));
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text(
-                                  'EHR Summary copied to clipboard!')),
+                            content: Text('EHR Summary copied to clipboard!'),
+                          ),
                         );
                       },
                       icon: const Icon(Icons.copy, size: 12),
-                      label: const Text('Copy for EHR',
-                          style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold)),
+                      label: const Text(
+                        'Copy for EHR',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -293,7 +337,8 @@ class TherapistPortalScreen extends ConsumerWidget {
                     color: Colors.black.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.06)),
+                      color: Colors.white.withValues(alpha: 0.06),
+                    ),
                   ),
                   child: Text(
                     ehrSummary,
@@ -322,9 +367,10 @@ class TherapistPortalScreen extends ConsumerWidget {
         spacing: 8,
         runSpacing: 4,
         children: [
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 12, color: AppColors.textPrimary)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: AppColors.textPrimary),
+          ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
@@ -334,9 +380,10 @@ class TherapistPortalScreen extends ConsumerWidget {
             child: Text(
               status,
               style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.sage),
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                color: AppColors.sage,
+              ),
             ),
           ),
         ],
@@ -349,9 +396,11 @@ class TherapistPortalScreen extends ConsumerWidget {
     buffer.writeln('=== SEEN PATIENT BEHAVIORAL ANNOTATION SUMMARY ===');
     buffer.writeln('Patient ID: Alex Morgan (#P-4089)');
     buffer.writeln(
-        'Observation Period: 14 Days ($totalDays completed daily entries)');
+      'Observation Period: 14 Days ($totalDays completed daily entries)',
+    );
     buffer.writeln(
-        'Data Provenance: Self-annotated visual context logs (Zero PII raw telemetry stored)');
+      'Data Provenance: Self-annotated visual context logs (Zero PII raw telemetry stored)',
+    );
     buffer.writeln('');
     buffer.writeln('--- KEY OBSERVED ASSOCIATIONS (NON-CAUSAL) ---');
     for (final p in patterns) {
@@ -360,7 +409,8 @@ class TherapistPortalScreen extends ConsumerWidget {
     buffer.writeln('');
     buffer.writeln('--- THERAPIST CLINICAL NOTES ---');
     buffer.writeln(
-        'Patient consistently leverages solitary quiet moments on high-demand days as restorative recovery rather than isolation.');
+      'Patient consistently leverages solitary quiet moments on high-demand days as restorative recovery rather than isolation.',
+    );
     return buffer.toString();
   }
 }

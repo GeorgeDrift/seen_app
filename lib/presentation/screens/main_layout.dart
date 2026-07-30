@@ -54,14 +54,9 @@ class _PatientFlow extends ConsumerWidget {
           top: step == PatientStep.hiddenScene ? false : true,
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 350),
-            transitionBuilder: (child, animation) => FadeTransition(
-              opacity: animation,
-              child: child,
-            ),
-            child: KeyedSubtree(
-              key: ValueKey(step),
-              child: _buildStep(step),
-            ),
+            transitionBuilder: (child, animation) =>
+                FadeTransition(opacity: animation, child: child),
+            child: KeyedSubtree(key: ValueKey(step), child: _buildStep(step)),
           ),
         ),
       ),
@@ -109,19 +104,14 @@ class _TherapistShell extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              AppColors.backgroundStart,
-              AppColors.backgroundEnd,
-            ],
+            colors: [AppColors.backgroundStart, AppColors.backgroundEnd],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
               _TherapistHeader(ref: ref),
-              const Expanded(
-                child: TherapistPortalScreen(),
-              ),
+              const Expanded(child: TherapistPortalScreen()),
             ],
           ),
         ),
@@ -162,7 +152,7 @@ class _TherapistHeader extends StatelessWidget {
                     BoxShadow(
                       color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 8,
-                    )
+                    ),
                   ],
                 ),
                 child: const Icon(
@@ -187,20 +177,20 @@ class _TherapistHeader extends StatelessWidget {
           GestureDetector(
             onTap: () => modeNotifier.set(AppMode.patient),
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.12),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
               ),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.person_outline,
-                      size: 14, color: AppColors.textSecondary),
+                  Icon(
+                    Icons.person_outline,
+                    size: 14,
+                    color: AppColors.textSecondary,
+                  ),
                   SizedBox(width: 6),
                   Text(
                     'Patient View',

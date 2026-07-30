@@ -14,16 +14,17 @@ import 'day_flow_controller.dart';
 /// enters the error branch — it exists purely as a safety net.
 final followUpQuestionProvider =
     AsyncNotifierProviderFamily<FollowUpController, FollowUpQuestion, Clue>(
-        FollowUpController.new);
+      FollowUpController.new,
+    );
 
-class FollowUpController
-    extends FamilyAsyncNotifier<FollowUpQuestion, Clue> {
+class FollowUpController extends FamilyAsyncNotifier<FollowUpQuestion, Clue> {
   @override
   Future<FollowUpQuestion> build(Clue arg) async {
     final repo = ref.watch(seenRepositoryProvider);
     final flow = ref.read(dayFlowControllerProvider);
-    final previousMeaning =
-        ref.read(dayFlowControllerProvider.notifier).lastAnsweredOption;
+    final previousMeaning = ref
+        .read(dayFlowControllerProvider.notifier)
+        .lastAnsweredOption;
     return repo.followUpQuestion(
       clue: arg,
       context: flow.context,

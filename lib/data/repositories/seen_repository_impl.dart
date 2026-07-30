@@ -16,6 +16,7 @@ import '../models/daily_entry.dart';
 import '../models/follow_up_question.dart';
 import '../models/interpreted_signal.dart';
 import '../models/pattern_observation.dart';
+import '../models/reflection.dart';
 import '../models/scene_composition.dart';
 import '../remote/seen_api.dart';
 
@@ -34,13 +35,13 @@ class SeenRepositoryImpl implements SeenRepository {
     PatternEngine? patternEngine,
     HistoricalDataset? historicalDataset,
     Uuid? uuid,
-  })  : _api = api,
-        _signalEngine = signalEngine ?? const SignalEngine(),
-        _scoringEngine = scoringEngine ?? const ScoringEngine(),
-        _summaryEngine = summaryEngine ?? const SummaryEngine(),
-        _patternEngine = patternEngine ?? const PatternEngine(),
-        _historicalDataset = historicalDataset ?? HistoricalDataset(),
-        _uuid = uuid ?? const Uuid();
+  }) : _api = api,
+       _signalEngine = signalEngine ?? const SignalEngine(),
+       _scoringEngine = scoringEngine ?? const ScoringEngine(),
+       _summaryEngine = summaryEngine ?? const SummaryEngine(),
+       _patternEngine = patternEngine ?? const PatternEngine(),
+       _historicalDataset = historicalDataset ?? HistoricalDataset(),
+       _uuid = uuid ?? const Uuid();
 
   final SeenApi _api;
   final SignalEngine _signalEngine;
@@ -66,8 +67,7 @@ class SeenRepositoryImpl implements SeenRepository {
     DailyContext context,
     List<InterpretedSignal> signals, {
     List<String> recentClueIds = const [],
-  }) =>
-      _scoringEngine.composeScene(ClueCatalog.all, signals, recentClueIds);
+  }) => _scoringEngine.composeScene(ClueCatalog.all, signals, recentClueIds);
 
   @override
   Future<FollowUpQuestion> followUpQuestion({
@@ -119,6 +119,67 @@ class SeenRepositoryImpl implements SeenRepository {
       displayedClueIds: displayedClueIds,
       selectedClues: selectedClues,
       generatedSummary: _summaryEngine.buildLocal(selectedClues),
+    );
+  }
+
+  @override
+  Future<Reflection> generateReflection({
+    required DailyContext context,
+    required List<InterpretedSignal> interpretedSignals,
+    required List<Map<String, String>> moments,
+  }) async {
+    if (_api.isConfigured) {
+      try {
+        return await _api.generateReflection(
+          context: context,
+          interpretedSignals: interpretedSignals,
+          moments: moments,
+        );
+      } on Failure {
+        // fall through to local
+      }
+    }
+    return _localReflection(moments);
+  }
+
+  @override
+  Future<Reflection> refineReflection({
+    required String originalReflection,
+    required List<Map<String, String>> moments,
+    required String steeringText,
+  }) async {
+    if (_api.isConfigured) {
+      try {
+        return await _api.refineReflection(
+          originalReflection: originalReflection,
+          moments: moments,
+          steeringText: steeringText,
+        );
+      } on Failure {
+        // fall through — keep the existing reflection unchanged
+      }
+    }
+    return Reflection(
+      text: originalReflection,
+      generatedAt: DateTime.now(),
+      isEdited: true,
+    );
+  }
+
+  Reflection _localReflection(List<Map<String, String>> moments) {
+    if (moments.isEmpty) {
+      return Reflection(
+        text:
+            'No moments were captured today — this entry was saved with no reflection.',
+        generatedAt: DateTime.now(),
+      );
+    }
+    final fragments = moments
+        .map((m) => '${m['clueTitle']} brought to mind ${m['text']}')
+        .join('; ');
+    return Reflection(
+      text: 'Today included $fragments.',
+      generatedAt: DateTime.now(),
     );
   }
 

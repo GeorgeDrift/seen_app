@@ -26,25 +26,24 @@ class ClueSelection {
     String? followUpQuestion,
     String? answerOption,
     String? confidence,
-  }) =>
-      ClueSelection(
-        clueId: clueId,
-        clueTitle: clueTitle,
-        selectedAt: selectedAt,
-        dailyContextDate: dailyContextDate,
-        userMeaning: userMeaning ?? this.userMeaning,
-        followUpQuestion: followUpQuestion ?? this.followUpQuestion,
-        answerOption: answerOption ?? this.answerOption,
-        confidence: confidence ?? this.confidence,
-      );
+  }) => ClueSelection(
+    clueId: clueId,
+    clueTitle: clueTitle,
+    selectedAt: selectedAt,
+    dailyContextDate: dailyContextDate,
+    userMeaning: userMeaning ?? this.userMeaning,
+    followUpQuestion: followUpQuestion ?? this.followUpQuestion,
+    answerOption: answerOption ?? this.answerOption,
+    confidence: confidence ?? this.confidence,
+  );
 
   Map<String, dynamic> toJson() => {
-        'clueId': clueId,
-        'selectedAt': selectedAt.toIso8601String(),
-        'dailyContextDate': dailyContextDate,
-        'userMeaning': userMeaning,
-        'followUpQuestion': followUpQuestion,
-        'answerOption': answerOption,
-        'confidence': confidence,
-      };
+    'clueId': clueId,
+    'selectedAt': selectedAt.toIso8601String(),
+    'dailyContextDate': dailyContextDate,
+    'userMeaning': userMeaning,
+    'followUpQuestion': followUpQuestion,
+    'answerOption': answerOption,
+    'confidence': confidence,
+  };
 }
