@@ -33,11 +33,15 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  flutter_native_splash: ^2.4.8
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
   assets:
     - assets/cozy_reflection_header.png
+    - assets/cozy_evening_header.png
+    - assets/cozy-completed-header.png
     - assets/cozy_bedroom_scene.png
     - assets/figma_intro_background.png
     - assets/figma_loading_background.png
@@ -52,3 +56,21 @@ flutter:
         - asset: assets/fonts/DMSans-Variable.ttf
         - asset: assets/fonts/DMSans-Italic-Variable.ttf
           style: italic
+
+flutter_native_splash:
+  color: "#bca2be"
+  image: assets/splash_screen.png
+  fullscreen: true
+  web: false
+  android_12:
+    image: assets/logo.png
+    icon_background_color: "#ffffff"
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo.png"
+  remove_alpha_ios: true
+  background_color_ios: "#ffffff"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/logo.png"
