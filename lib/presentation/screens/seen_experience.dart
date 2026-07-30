@@ -482,8 +482,8 @@ class _SceneIntroScreen extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                  Text(
-                    'YOUR SCENE IS READY',
+                    Text(
+                      'YOUR SCENE IS READY',
                       style: _kicker(color: Colors.white),
                     ),
                     const SizedBox(height: 14),
@@ -658,15 +658,6 @@ class _MomentsScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
                     vertical: 7,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    sceneLabel,
-                    style: _sans(
-                      color: const Color(0xffc9c1d2),
-                      size: 12,
-                      weight: FontWeight.w600,
-                    ),
                   ),
                   decoration: BoxDecoration(
                     color: const Color(0xfff0ebf8),
