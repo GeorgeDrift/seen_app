@@ -1,8 +1,11 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/local/demo_profiles.dart';
 import '../../data/models/daily_context.dart';
 import '../../data/models/demo_profile.dart';
+import '../providers/api_providers.dart';
 
 /// Holds the current [DailyContext] plus a label identifying which demo
 /// profile it started from. Ad-hoc simulator tweaks (steps slider etc.)
@@ -26,10 +29,53 @@ final activeProfileProvider =
     );
 
 class ActiveProfileController extends Notifier<ActiveProfile> {
+  bool _disposed = false;
+
   @override
   ActiveProfile build() {
     final first = DemoProfiles.all.first;
-    return ActiveProfile(label: first.label, context: first.context);
+    final initial = ActiveProfile(label: first.label, context: first.context);
+
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+
+    // Fire-and-forget: fills in real device data (sleep/steps/calendar/
+    // weather) once collection resolves, field-by-field, falling back to
+    // this demo profile's values for anything unavailable or denied.
+    _loadFromDevice(initial.context);
+
+    return initial;
+  }
+
+  Future<void> _loadFromDevice(DailyContext fallback) async {
+    final service = ref.read(passiveDataServiceProvider);
+    final result = await service.collect(fallback: fallback);
+    if (_disposed) return;
+
+    developer.log(
+      'Applying passive data to active profile — '
+      'sleepHours: ${result.sleepHours.source}, '
+      'steps: ${result.steps.source}, '
+      'calendar: ${result.calendarEventCount.source}, '
+      'weather: ${result.weather.source}',
+      name: 'PassiveData',
+    );
+
+    state = state.copyWith(
+      context: state.context.copyWith(
+        sleepHours: result.sleepHours.value,
+        sleepComparison: result.sleepHours.source == 'device'
+            ? 'unknown'
+            : null,
+        steps: result.steps.value,
+        activityComparison: result.steps.source == 'device'
+            ? 'unknown'
+            : null,
+        calendarEventCount: result.calendarEventCount.value,
+        calendarLoad: result.calendarLoad.value,
+        weather: result.weather.value,
+      ),
+    );
   }
 
   /// Switch to one of the three canned demo profiles by label.
