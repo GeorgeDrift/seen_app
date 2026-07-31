@@ -1,11 +1,23 @@
+import '../../data/models/clue.dart';
 import '../../data/models/follow_up_question.dart';
 
-/// Static, category-based follow-up questions used whenever the AI call
-/// fails or is unavailable. The wording matches the requirements guide's
-/// examples and never diagnoses.
+/// Follow-up questions used whenever the AI call fails or is unavailable.
+/// Always clue-specific — every [Clue] already carries its own hand-written
+/// `question`/`options` pair, so tapping different items never yields the
+/// same fallback question just because they share a category.
 class FallbackQuestions {
   const FallbackQuestions._();
 
+  /// The clue's own question/options — the fallback used offline or when
+  /// the backend call fails. Always matches the exact item tapped.
+  static FollowUpQuestion forClue(Clue clue) => FollowUpQuestion(
+    question: clue.question,
+    options: clue.options,
+    purpose: 'fallback_clarification',
+  );
+
+  /// Category-level fallback, kept only for category-only call sites (none
+  /// currently in the app) — prefer [forClue] wherever a [Clue] is available.
   static const Map<String, FollowUpQuestion> _byCategory = {
     'sleep': FollowUpQuestion(
       question: 'How did this affect your energy today?',

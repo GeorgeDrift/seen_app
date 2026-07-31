@@ -58,11 +58,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('OPEN LAPTOP'), findsOneWidget);
     // The follow-up question is now fetched per-clue (dynamic, not one
-    // static prompt for every clue) — offline in this test, it falls back
-    // to FallbackQuestions.forCategory('workload') since "open_laptop"'s
-    // inferred category is 'workload'.
+    // static prompt for every clue, and not even shared across clues in the
+    // same category) — offline in this test, it falls back to the tapped
+    // target's own `question` (built from its tap-map label "Open laptop")
+    // via FallbackQuestions.forClue, per SceneTapTarget.asClue.
     expect(
-      find.text('How did this schedule or workload feel today?'),
+      find.text('What did the Open laptop bring to mind from your day?'),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
