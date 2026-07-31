@@ -14,8 +14,17 @@ class ApiClient {
     : dio = Dio(
         BaseOptions(
           baseUrl: config.baseUrl,
-          connectTimeout: const Duration(seconds: 6),
-          receiveTimeout: const Duration(seconds: 10),
+          // Generous margin above the longest server-side AI timeout
+          // (weeklyInsightsEngine's 12s) plus Azure Functions Consumption
+          // plan cold-start overhead (the function host itself can take
+          // several seconds to spin up after being idle, on top of the AI
+          // call). A tighter client timeout than the server's own budget
+          // meant the first request after any idle period would silently
+          // time out client-side and fall back to the generic local
+          // reflection, while a second attempt (now-warm instance) would
+          // succeed — see the "first click returns nothing" reflection bug.
+          connectTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 30),
           headers: const {'Content-Type': 'application/json'},
         ),
       ) {

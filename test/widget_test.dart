@@ -40,21 +40,29 @@ void main() {
     );
     expect(find.text('0 moments found'), findsOneWidget);
 
+    // Default demo profile (Profile A "Overloaded": low sleep, low steps,
+    // high calendar load) has Load=High, which the scene-classification
+    // rules map straight to "Full and Active" regardless of Recovery —
+    // see ScoringEngine._selectScene.
     final sceneImage = find.image(
-      const AssetImage('assets/cozy_purple_bedroom_retreat.png'),
+      const AssetImage('assets/cozy_plant_filled_bedroom_workspace.png'),
     );
     expect(sceneImage, findsOneWidget);
     final sceneSize = tester.getSize(sceneImage);
     expect(sceneSize.width, 390);
     expect(sceneSize.height, greaterThan(sceneSize.width));
 
-    final blanketTarget = find.bySemanticsLabel('Bed blanket');
-    expect(blanketTarget, findsOneWidget);
-    await tester.tap(blanketTarget);
+    final laptopTarget = find.bySemanticsLabel('Open laptop');
+    expect(laptopTarget, findsOneWidget);
+    await tester.tap(laptopTarget);
     await tester.pumpAndSettle();
-    expect(find.text('BED BLANKET'), findsOneWidget);
+    expect(find.text('OPEN LAPTOP'), findsOneWidget);
+    // The follow-up question is now fetched per-clue (dynamic, not one
+    // static prompt for every clue) — offline in this test, it falls back
+    // to FallbackQuestions.forCategory('workload') since "open_laptop"'s
+    // inferred category is 'workload'.
     expect(
-      find.text('What did this bring to mind from your day?'),
+      find.text('How did this schedule or workload feel today?'),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);
@@ -85,7 +93,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.image(const AssetImage('assets/cozy_purple_bedroom_retreat.png')),
+      find.image(
+        const AssetImage('assets/cozy_plant_filled_bedroom_workspace.png'),
+      ),
       findsOneWidget,
     );
     expect(tester.takeException(), isNull);

@@ -145,6 +145,7 @@ class SeenRepositoryImpl implements SeenRepository {
     required DailyContext context,
     required List<InterpretedSignal> interpretedSignals,
     required List<Map<String, String>> moments,
+    String? additionalInput,
   }) async {
     if (_api.isConfigured) {
       try {
@@ -152,6 +153,7 @@ class SeenRepositoryImpl implements SeenRepository {
           context: context,
           interpretedSignals: interpretedSignals,
           moments: moments,
+          additionalInput: additionalInput,
         );
         _logSuccess('generateReflection');
         return result;
@@ -194,12 +196,17 @@ class SeenRepositoryImpl implements SeenRepository {
     );
   }
 
+  /// Fully offline, non-AI safety net — deliberately does no safety-language
+  /// analysis of its own (that only runs on the backend path), so it never
+  /// claims `safetyState: 'needs_immediate_support'`.
   Reflection _localReflection(List<Map<String, String>> moments) {
     if (moments.isEmpty) {
       return Reflection(
         text:
             'No moments were captured today — this entry was saved with no reflection.',
         generatedAt: DateTime.now(),
+        confidence: 'low',
+        needsUserReview: true,
       );
     }
     final fragments = moments
@@ -208,6 +215,9 @@ class SeenRepositoryImpl implements SeenRepository {
     return Reflection(
       text: 'Today included $fragments.',
       generatedAt: DateTime.now(),
+      cluesUsed: moments.map((m) => m['clueTitle'] ?? '').toList(),
+      confidence: 'low',
+      needsUserReview: true,
     );
   }
 
