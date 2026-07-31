@@ -13,15 +13,23 @@ import '../../data/models/scene_tap_map.dart';
 import '../controllers/day_flow_controller.dart';
 import '../providers/api_providers.dart';
 import 'patterns_screen.dart';
+import 'profile_screen.dart';
 
-/// The bottom nav's "Patterns" tab (index 1) is the only one with a real
-/// destination today — "Today" and "Profile" stay local-only restyles since
-/// there's nothing to navigate to yet for them.
+/// "Today" stays a local-only restyle (there's nowhere to navigate — it's
+/// already the current screen). "Patterns" and "Profile" push their real
+/// screens.
 void _onNavSelect(BuildContext context, int index) {
-  if (index == 1) {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const PatternsScreen()));
+  switch (index) {
+    case 1:
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const PatternsScreen()));
+      break;
+    case 2:
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const ProfileScreen()));
+      break;
   }
 }
 

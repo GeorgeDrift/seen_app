@@ -71,12 +71,27 @@ class SeenRepositoryImpl implements SeenRepository {
     DailyContext context,
     List<InterpretedSignal> signals, {
     List<String> recentClueIds = const [],
-  }) => _scoringEngine.composeScene(
-    context,
-    ClueCatalog.all,
-    signals,
-    recentClueIds,
-  );
+  }) {
+    final scene = _scoringEngine.composeScene(
+      context,
+      ClueCatalog.all,
+      signals,
+      recentClueIds,
+    );
+    // The scene image only changes when this input changes — logged so a
+    // "the scene never changes" report can be diagnosed from the device's
+    // own logs: is composeScene actually being fed different sleep/steps/
+    // calendar values, or is the same (fallback) DailyContext being reused?
+    developer.log(
+      'composeScene -> kind=${scene.kind} '
+      '(sleepHours=${context.sleepHours}, steps=${context.steps}, '
+      'calendarEventCount=${context.calendarEventCount}, '
+      'calendarLoad=${context.calendarLoad}, '
+      'screenTimeHours=${context.screenTimeHours})',
+      name: 'Scene',
+    );
+    return scene;
+  }
 
   @override
   Future<FollowUpQuestion> followUpQuestion({
