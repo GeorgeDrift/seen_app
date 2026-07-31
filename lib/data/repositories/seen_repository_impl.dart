@@ -102,7 +102,7 @@ class SeenRepositoryImpl implements SeenRepository {
   }) async {
     if (!_api.isConfigured) {
       _logFallback('followUpQuestion', 'backend not configured');
-      return FallbackQuestions.forCategory(clue.category);
+      return FallbackQuestions.forClue(clue);
     }
     try {
       final result = await _api.followUpQuestion(
@@ -115,7 +115,7 @@ class SeenRepositoryImpl implements SeenRepository {
       return result;
     } on Failure catch (e) {
       _logFallback('followUpQuestion', '${e.runtimeType}: ${e.message}');
-      return FallbackQuestions.forCategory(clue.category);
+      return FallbackQuestions.forClue(clue);
     }
   }
 
@@ -228,7 +228,7 @@ class SeenRepositoryImpl implements SeenRepository {
         .map((m) => '${m['clueTitle']} brought to mind ${m['text']}')
         .join('; ');
     return Reflection(
-      text: 'Today included $fragments.',
+      text: 'Today, I noticed $fragments.',
       generatedAt: DateTime.now(),
       cluesUsed: moments.map((m) => m['clueTitle'] ?? '').toList(),
       confidence: 'low',

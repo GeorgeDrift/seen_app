@@ -6,7 +6,7 @@ void main() {
   const engine = ReflectionHabitsEngine();
 
   group('ReflectionHabitsEngine.summarize — real 7-day demo dataset', () {
-    final habits = engine.summarize(HealthWeekDataset.demo);
+    final habits = engine.summarize(HealthWeekDataset.forProfile(null));
 
     test('counts completed/total days correctly (one missed day)', () {
       expect(habits.completedCount, 6);

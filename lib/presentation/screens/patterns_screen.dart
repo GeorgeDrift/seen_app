@@ -8,6 +8,7 @@ import '../../data/models/health_week_day.dart';
 import '../../data/models/health_week_insights.dart';
 import '../../domain/engine/reflection_habits_engine.dart';
 import '../controllers/health_over_time_controller.dart';
+import 'profile_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────
 // Palette / type — mirrors seen_experience.dart's private tokens exactly
@@ -1148,7 +1149,14 @@ class _PatternsBottomNav extends StatelessWidget {
             onTap: () => Navigator.of(context).pop(),
           ),
           const _NavTab(icon: 'nav-icon-patterns', label: 'Patterns', selected: true),
-          const _NavTab(icon: 'nav-icon-profile', label: 'Profile', selected: false),
+          _NavTab(
+            icon: 'nav-icon-profile',
+            label: 'Profile',
+            selected: false,
+            onTap: () => Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            ),
+          ),
         ],
       ),
     );

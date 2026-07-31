@@ -10,6 +10,7 @@ import '../../data/models/clue_selection.dart';
 import '../../data/models/follow_up_question.dart';
 import '../../data/models/scene_composition.dart';
 import '../../data/models/scene_tap_map.dart';
+import '../../domain/engine/fallback_questions.dart';
 import '../controllers/day_flow_controller.dart';
 import '../providers/api_providers.dart';
 import 'patterns_screen.dart';
@@ -65,10 +66,49 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
   // scoring-engine-curated `flow.scene.visibleClues` subset.
   List<String> _currentSceneClueIds = const [];
 
+  // Every tappable item's follow-up question, fetched all at once as soon as
+  // the scene's tap map loads (before the user has tapped anything) so that
+  // by the time they actually tap an item, its question is already in hand —
+  // taps feel instant instead of waiting on a network round trip per tap.
+  // Keyed by clue id. Only ever fetched once per scene load (guarded by
+  // `_prefetchedForSceneId`); a clue missing from this map (prefetch still
+  // in flight, or it failed) falls back to the clue's own local question —
+  // never a network wait at tap time.
+  final Map<String, FollowUpQuestion> _prefetchedQuestions = {};
+  String? _prefetchedForSceneId;
+
   void _onSceneLoaded(SceneTapMap map) {
     _currentSceneClueIds = map.items
         .map((t) => t.clueId(map.sceneId))
         .toList();
+    _prefetchQuestions(map);
+  }
+
+  void _prefetchQuestions(SceneTapMap map) {
+    if (_prefetchedForSceneId == map.sceneId) return;
+    _prefetchedForSceneId = map.sceneId;
+
+    final flow = ref.read(dayFlowControllerProvider);
+    final repo = ref.read(seenRepositoryProvider);
+    for (final target in map.items) {
+      final clue = target.asClue(map.sceneId);
+      // previousMeaning is intentionally omitted here (unlike the live
+      // per-tap path) — at prefetch time nothing has been answered yet, so
+      // there is no prior selection to build continuity from.
+      repo
+          .followUpQuestion(
+            clue: clue,
+            context: flow.context,
+            interpretedSignals: flow.signals,
+          )
+          .then((q) {
+            if (mounted) _prefetchedQuestions[clue.id] = q;
+          })
+          .catchError((_) {
+            // Leave it unset — _openMoment falls back to the clue's own
+            // local question rather than retrying over the network.
+          });
+    }
   }
 
   static const _fallbackReflection =
@@ -163,17 +203,19 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
     }
 
     final notifier = ref.read(dayFlowControllerProvider.notifier);
-    // Fetched dynamically per-clue (falls back to a category-based static
-    // question offline/on failure — see FallbackQuestions — but never the
-    // one-size-fits-all prompt every clue used to show).
-    final questionFuture = ref
-        .read(seenRepositoryProvider)
-        .followUpQuestion(
-          clue: clue,
-          context: flow.context,
-          interpretedSignals: flow.signals,
-          previousMeaning: notifier.lastAnsweredOption,
-        );
+    // The question for every tappable item was already fetched in parallel
+    // when the scene loaded (see _prefetchQuestions) — using that cached
+    // result here means the tap is instant, no network wait. It's only
+    // valid when nothing else has been answered yet in this session, since
+    // it was fetched with no `previousMeaning` to build continuity from.
+    // Once the user has answered another clue (or the prefetch hasn't
+    // resolved yet), fall back to the clue's own local question instantly
+    // rather than making the user wait on a live AI call per tap.
+    final prefetched = _prefetchedQuestions[clue.id];
+    final FollowUpQuestion question =
+        (prefetched != null && notifier.lastAnsweredOption == null)
+        ? prefetched
+        : FallbackQuestions.forClue(clue);
 
     final meaning = await showModalBottomSheet<String>(
       context: context,
@@ -187,14 +229,13 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
         child: _MomentSheet(
           clue: clue,
           initialMeaning: existing?.userMeaning,
-          questionFuture: questionFuture,
+          question: question.question,
         ),
       ),
     );
 
     if (!mounted || meaning == null || meaning.trim().isEmpty) return;
 
-    final question = await questionFuture;
     final accepted = notifier.addSelection(
       ClueSelection(
         clueId: clue.id,
@@ -1606,16 +1647,17 @@ class _MomentSheet extends StatefulWidget {
   const _MomentSheet({
     required this.clue,
     required this.initialMeaning,
-    required this.questionFuture,
+    required this.question,
   });
 
   final Clue clue;
   final String? initialMeaning;
 
-  /// Resolves to a clue-specific question (AI-generated, or a category-based
-  /// fallback if the backend is unavailable) — never the same generic
-  /// prompt for every clue.
-  final Future<FollowUpQuestion> questionFuture;
+  /// The clue-specific question (AI-generated, or a category-based fallback
+  /// if the backend is unavailable) — never the same generic prompt for
+  /// every clue. Already resolved by the time this sheet is built, so it
+  /// renders correctly from the very first frame.
+  final String question;
 
   @override
   State<_MomentSheet> createState() => _MomentSheetState();
@@ -1625,15 +1667,6 @@ class _MomentSheetState extends State<_MomentSheet> {
   late final TextEditingController _controller = TextEditingController(
     text: widget.initialMeaning ?? '',
   );
-  String? _question;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.questionFuture.then((q) {
-      if (mounted) setState(() => _question = q.question);
-    });
-  }
 
   @override
   void dispose() {
@@ -1672,10 +1705,7 @@ class _MomentSheetState extends State<_MomentSheet> {
             style: _kicker(weight: FontWeight.w600),
           ),
           const SizedBox(height: 10),
-          Text(
-            _question ?? 'What did this bring to mind from your day?',
-            style: _serifTitle(size: 20, height: 1.3),
-          ),
+          Text(widget.question, style: _serifTitle(size: 20, height: 1.3)),
           const SizedBox(height: 18),
           TextField(
             controller: _controller,
