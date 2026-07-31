@@ -56,7 +56,7 @@ class DayFlowState {
 final dayFlowControllerProvider =
     NotifierProvider<DayFlowController, DayFlowState>(DayFlowController.new);
 
-const int kMinSelectionsPerDay = 3;
+const int kMinSelectionsPerDay = 1;
 const int kMaxSelectionsPerDay = 5;
 
 class DayFlowController extends Notifier<DayFlowState> {

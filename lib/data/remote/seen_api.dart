@@ -93,21 +93,22 @@ class SeenApi {
     required DailyContext context,
     required List<InterpretedSignal> interpretedSignals,
     required List<Map<String, String>> moments,
+    String? additionalInput,
   }) async {
     final data = <String, dynamic>{
       'context': context.toJson(),
       'interpretedSignals': interpretedSignals.map((s) => s.toJson()).toList(),
       'moments': moments,
+      'additionalInput': ?additionalInput,
+      // When this call happens, for reflection-habit context only — never
+      // sent/used as evidence of mood or health.
+      'submittedAt': DateTime.now().toIso8601String(),
     };
     final res = await _guard(
       () =>
           _client.dio.post<Map<String, dynamic>>('/day/reflection', data: data),
     );
-    return Reflection(
-      text: res['reflection'] as String,
-      generatedAt: DateTime.now(),
-      isEdited: false,
-    );
+    return Reflection.fromJson(res);
   }
 
   Future<Reflection> refineReflection({

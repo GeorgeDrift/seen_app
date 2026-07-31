@@ -28,6 +28,9 @@ dependencies:
   # Persists today's in-progress/completed entry across app restarts.
   shared_preferences: ^2.3.3
 
+  # Renders the Figma-exported icon set for the Patterns screen.
+  flutter_svg: ^2.0.10+1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -51,6 +54,7 @@ flutter:
     - assets/open_and_steady_map.json
     - assets/figma_intro_background.png
     - assets/figma_loading_background.png
+    - assets/icons/patterns/
   fonts:
     - family: Lora
       fonts:

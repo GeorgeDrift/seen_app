@@ -7,8 +7,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/local/day_progress_store.dart';
 import '../../data/models/clue.dart';
 import '../../data/models/clue_selection.dart';
+import '../../data/models/follow_up_question.dart';
+import '../../data/models/scene_composition.dart';
+import '../../data/models/scene_tap_map.dart';
 import '../controllers/day_flow_controller.dart';
 import '../providers/api_providers.dart';
+import 'patterns_screen.dart';
+
+/// The bottom nav's "Patterns" tab (index 1) is the only one with a real
+/// destination today — "Today" and "Profile" stay local-only restyles since
+/// there's nothing to navigate to yet for them.
+void _onNavSelect(BuildContext context, int index) {
+  if (index == 1) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const PatternsScreen()));
+  }
+}
 
 const _ink = Color(0xff2a2733);
 const _muted = Color(0xff8a849a);
@@ -35,6 +50,18 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
   String _reflection = _fallbackReflection;
   String _originalReflection = _fallbackReflection;
   final TextEditingController _editController = TextEditingController();
+
+  // Populated once the current scene's tap map finishes loading (see
+  // _SceneImage.onSceneLoaded) — this is what's actually shown/tappable,
+  // which is what `displayedClueIds` should reflect, rather than the old
+  // scoring-engine-curated `flow.scene.visibleClues` subset.
+  List<String> _currentSceneClueIds = const [];
+
+  void _onSceneLoaded(SceneTapMap map) {
+    _currentSceneClueIds = map.items
+        .map((t) => t.clueId(map.sceneId))
+        .toList();
+  }
 
   static const _fallbackReflection =
       'Today seemed to carry both stillness and unfinished thoughts. '
@@ -127,6 +154,19 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
       return;
     }
 
+    final notifier = ref.read(dayFlowControllerProvider.notifier);
+    // Fetched dynamically per-clue (falls back to a category-based static
+    // question offline/on failure — see FallbackQuestions — but never the
+    // one-size-fits-all prompt every clue used to show).
+    final questionFuture = ref
+        .read(seenRepositoryProvider)
+        .followUpQuestion(
+          clue: clue,
+          context: flow.context,
+          interpretedSignals: flow.signals,
+          previousMeaning: notifier.lastAnsweredOption,
+        );
+
     final meaning = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
@@ -136,25 +176,28 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
         padding: EdgeInsets.only(
           bottom: MediaQuery.viewInsetsOf(context).bottom,
         ),
-        child: _MomentSheet(clue: clue, initialMeaning: existing?.userMeaning),
+        child: _MomentSheet(
+          clue: clue,
+          initialMeaning: existing?.userMeaning,
+          questionFuture: questionFuture,
+        ),
       ),
     );
 
     if (!mounted || meaning == null || meaning.trim().isEmpty) return;
 
-    final accepted = ref
-        .read(dayFlowControllerProvider.notifier)
-        .addSelection(
-          ClueSelection(
-            clueId: clue.id,
-            clueTitle: clue.title,
-            selectedAt: DateTime.now(),
-            dailyContextDate: flow.context.date,
-            userMeaning: meaning.trim(),
-            followUpQuestion: 'What did this bring to mind from your day?',
-            answerOption: meaning.trim(),
-          ),
-        );
+    final question = await questionFuture;
+    final accepted = notifier.addSelection(
+      ClueSelection(
+        clueId: clue.id,
+        clueTitle: clue.title,
+        selectedAt: DateTime.now(),
+        dailyContextDate: flow.context.date,
+        userMeaning: meaning.trim(),
+        followUpQuestion: question.question,
+        answerOption: meaning.trim(),
+      ),
+    );
 
     if (!accepted && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -239,7 +282,9 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
     await repo.completeDay(
       context: flow.context,
       interpretedSignals: flow.signals,
-      displayedClueIds: flow.scene.visibleClues.map((c) => c.id).toList(),
+      displayedClueIds: _currentSceneClueIds.isNotEmpty
+          ? _currentSceneClueIds
+          : flow.scene.visibleClues.map((c) => c.id).toList(),
       selectedClues: flow.selections,
     );
     if (!mounted) return;
@@ -273,6 +318,7 @@ class _SeenExperienceState extends ConsumerState<SeenExperience> {
         onBack: () => _go(_JourneyPage.intro),
         onSelect: _openMoment,
         onReview: _prepareReflection,
+        onSceneLoaded: _onSceneLoaded,
       ),
       _JourneyPage.preparing => const _PreparingScreen(
         key: ValueKey('preparing'),
@@ -388,7 +434,12 @@ class _WelcomeScreen extends StatelessWidget {
                     style: _bodyStyle(),
                   ),
                   const SizedBox(height: 20),
-                  _GlimpseCard(sleep: sleep, steps: steps, weather: weather),
+                  _GlimpseCard(
+                    sleep: sleep,
+                    steps: steps,
+                    weather: weather,
+                    calendar: _calendarLoadLabel(flow.context.calendarEventCount),
+                  ),
                   const SizedBox(height: 28),
                   _PrimaryButton(
                     label: '✦   Explore my day',
@@ -404,7 +455,7 @@ class _WelcomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          const _BottomNavigation(),
+          _BottomNavigation(onSelect: (index) => _onNavSelect(context, index)),
         ],
       ),
     );
@@ -638,12 +689,14 @@ class _MomentsScreen extends StatelessWidget {
     required this.onBack,
     required this.onSelect,
     required this.onReview,
+    required this.onSceneLoaded,
   });
 
   final DayFlowState flow;
   final VoidCallback onBack;
   final ValueChanged<Clue> onSelect;
   final VoidCallback onReview;
+  final ValueChanged<SceneTapMap> onSceneLoaded;
 
   @override
   Widget build(BuildContext context) {
@@ -724,22 +777,15 @@ class _MomentsScreen extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              child: AspectRatio(
-                // Matches cozy_bedroom_scene.png's native 1:1 dimensions so
-                // the full image always shows at a consistent scale — an
-                // Expanded box alone stretches to fill arbitrary leftover
-                // height (which shrinks whenever the keyboard opens for the
-                // moment-capture sheet), and BoxFit.cover on a mismatched
-                // aspect ratio crops the sides, throwing off hotspot
-                // alignment and hiding some objects entirely.
-                aspectRatio: 1,
-                child: _SceneImage(
-                  clues: flow.scene.visibleClues,
-                  selectedIds: selectedIds,
-                  onSelect: onSelect,
-                ),
-              ),
+            // _SceneImage sizes itself from its tap map's own aspect ratio
+            // (each room image is ~941×1672, not 1:1) and scrolls
+            // internally — no outer fixed AspectRatio/SingleChildScrollView
+            // needed here, unlike the old single-square-image approach.
+            child: _SceneImage(
+              scene: flow.scene,
+              selectedIds: selectedIds,
+              onSelect: onSelect,
+              onSceneLoaded: onSceneLoaded,
             ),
           ),
           Container(
@@ -870,84 +916,153 @@ class _MomentsScreen extends StatelessWidget {
   }
 }
 
-class _SceneImage extends StatelessWidget {
+class _SceneImage extends StatefulWidget {
   const _SceneImage({
-    required this.clues,
+    required this.scene,
     required this.selectedIds,
     required this.onSelect,
+    required this.onSceneLoaded,
   });
 
-  final List<Clue> clues;
+  final SceneComposition scene;
   final Set<String> selectedIds;
   final ValueChanged<Clue> onSelect;
+  final ValueChanged<SceneTapMap> onSceneLoaded;
+
+  @override
+  State<_SceneImage> createState() => _SceneImageState();
+}
+
+class _SceneImageState extends State<_SceneImage> {
+  late Future<SceneTapMap> _tapMap;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTapMap();
+  }
+
+  @override
+  void didUpdateWidget(covariant _SceneImage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.scene.kind != widget.scene.kind) {
+      _loadTapMap();
+    }
+  }
+
+  void _loadTapMap() {
+    _tapMap = SceneTapMap.load(widget.scene.kind.tapMapAssetPath);
+    _tapMap.then((map) {
+      if (mounted) widget.onSceneLoaded(map);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) => Stack(
-        fit: StackFit.expand,
-        children: [
-          Image.asset(
-            'assets/cozy_bedroom_scene.png',
-            fit: BoxFit.cover,
-            alignment: Alignment.center,
-          ),
-          for (final clue in clues)
-            Positioned(
-              left: math.max(
-                0,
-                math.min(
-                  constraints.maxWidth - 54,
-                  clue.x * constraints.maxWidth - 27,
-                ),
-              ),
-              top: math.max(
-                0,
-                math.min(
-                  constraints.maxHeight - 54,
-                  clue.y * constraints.maxHeight - 27,
-                ),
-              ),
-              child: Semantics(
-                button: true,
-                label: clue.title,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: () => onSelect(clue),
-                  child: SizedBox(
-                    width: 54,
-                    height: 54,
-                    child: Center(
-                      child: AnimatedScale(
-                        duration: const Duration(milliseconds: 180),
-                        scale: selectedIds.contains(clue.id) ? 1 : 0,
-                        child: Container(
-                          width: 25,
-                          height: 25,
-                          decoration: const BoxDecoration(
-                            color: _purple,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Color(0x33000000),
-                                blurRadius: 6,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
+    return FutureBuilder<SceneTapMap>(
+      future: _tapMap,
+      builder: (context, snapshot) {
+        final tapMap = snapshot.data;
+        if (tapMap == null) {
+          return SingleChildScrollView(
+            child: Image.asset(
+              widget.scene.assetPath,
+              width: double.infinity,
+              fit: BoxFit.fitWidth,
+              alignment: Alignment.topCenter,
+            ),
+          );
+        }
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final canvasSize = Size(
+              constraints.maxWidth,
+              constraints.maxWidth / tapMap.imageSize.aspectRatio,
+            );
+            return SingleChildScrollView(
+              child: SizedBox.fromSize(
+                size: canvasSize,
+                child: Stack(
+                  fit: StackFit.expand,
+                  clipBehavior: Clip.hardEdge,
+                  children: [
+                    Image.asset(
+                      widget.scene.assetPath,
+                      width: canvasSize.width,
+                      height: canvasSize.height,
+                      fit: BoxFit.fill,
+                    ),
+                    for (final target in tapMap.items)
+                      Positioned.fromRect(
+                        rect: target.tapAreaFor(canvasSize),
+                        child: Semantics(
+                          button: true,
+                          label: target.label,
+                          selected: widget.selectedIds.contains(
+                            target.clueId(tapMap.sceneId),
                           ),
-                          child: const Icon(
-                            Icons.check_rounded,
-                            color: Colors.white,
-                            size: 16,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () =>
+                                widget.onSelect(target.asClue(tapMap.sceneId)),
+                            child: const SizedBox.expand(),
                           ),
                         ),
                       ),
-                    ),
-                  ),
+                    for (final target in tapMap.items)
+                      if (widget.selectedIds.contains(
+                        target.clueId(tapMap.sceneId),
+                      ))
+                        _SceneCheckmark(
+                          position: target.checkmarkFor(canvasSize),
+                          canvasSize: canvasSize,
+                        ),
+                  ],
                 ),
               ),
-            ),
-        ],
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _SceneCheckmark extends StatelessWidget {
+  const _SceneCheckmark({required this.position, required this.canvasSize});
+
+  static const _size = 25.0;
+  final Offset position;
+  final Size canvasSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final left = (position.dx - _size / 2)
+        .clamp(0.0, math.max(0.0, canvasSize.width - _size))
+        .toDouble();
+    final top = (position.dy - _size / 2)
+        .clamp(0.0, math.max(0.0, canvasSize.height - _size))
+        .toDouble();
+    return Positioned(
+      left: left,
+      top: top,
+      child: IgnorePointer(
+        child: Container(
+          width: _size,
+          height: _size,
+          decoration: const BoxDecoration(
+            color: _purple,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.check_rounded, color: Colors.white, size: 16),
+        ),
       ),
     );
   }
@@ -1466,12 +1581,13 @@ class _CompletedScreen extends StatelessWidget {
                     sleep: _formatSleep(flow.context.sleepHours),
                     steps: _formatNumber(flow.context.steps ?? 0),
                     weather: _titleCase(flow.context.weather),
+                    calendar: _calendarLoadLabel(flow.context.calendarEventCount),
                   ),
                 ],
               ),
             ),
           ),
-          const _BottomNavigation(),
+          _BottomNavigation(onSelect: (index) => _onNavSelect(context, index)),
         ],
       ),
     );
@@ -1479,10 +1595,19 @@ class _CompletedScreen extends StatelessWidget {
 }
 
 class _MomentSheet extends StatefulWidget {
-  const _MomentSheet({required this.clue, required this.initialMeaning});
+  const _MomentSheet({
+    required this.clue,
+    required this.initialMeaning,
+    required this.questionFuture,
+  });
 
   final Clue clue;
   final String? initialMeaning;
+
+  /// Resolves to a clue-specific question (AI-generated, or a category-based
+  /// fallback if the backend is unavailable) — never the same generic
+  /// prompt for every clue.
+  final Future<FollowUpQuestion> questionFuture;
 
   @override
   State<_MomentSheet> createState() => _MomentSheetState();
@@ -1492,6 +1617,15 @@ class _MomentSheetState extends State<_MomentSheet> {
   late final TextEditingController _controller = TextEditingController(
     text: widget.initialMeaning ?? '',
   );
+  String? _question;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.questionFuture.then((q) {
+      if (mounted) setState(() => _question = q.question);
+    });
+  }
 
   @override
   void dispose() {
@@ -1531,7 +1665,7 @@ class _MomentSheetState extends State<_MomentSheet> {
           ),
           const SizedBox(height: 10),
           Text(
-            'What did this bring to mind from your day?',
+            _question ?? 'What did this bring to mind from your day?',
             style: _serifTitle(size: 20, height: 1.3),
           ),
           const SizedBox(height: 18),
@@ -1599,11 +1733,13 @@ class _GlimpseCard extends StatelessWidget {
     required this.sleep,
     required this.steps,
     required this.weather,
+    required this.calendar,
   });
 
   final String sleep;
   final String steps;
   final String weather;
+  final String calendar;
 
   @override
   Widget build(BuildContext context) {
@@ -1663,9 +1799,9 @@ class _GlimpseCard extends StatelessWidget {
                 color: const Color(0xff87acd2),
               ),
               _Metric(
-                icon: Icons.schedule_rounded,
-                label: 'TIME',
-                value: _clockTime(),
+                icon: Icons.event_note_rounded,
+                label: 'CALENDAR',
+                value: calendar,
                 color: const Color(0xffd89459),
               ),
             ],
@@ -1809,7 +1945,12 @@ class _SystemTop extends StatelessWidget {
 }
 
 class _BottomNavigation extends StatefulWidget {
-  const _BottomNavigation();
+  const _BottomNavigation({this.onSelect});
+
+  /// Called whenever a tab is tapped, in addition to the local restyle
+  /// below. Optional so existing call sites that don't pass it keep the
+  /// original (purely decorative, no navigation) behavior.
+  final ValueChanged<int>? onSelect;
 
   @override
   State<_BottomNavigation> createState() => _BottomNavigationState();
@@ -1817,6 +1958,11 @@ class _BottomNavigation extends StatefulWidget {
 
 class _BottomNavigationState extends State<_BottomNavigation> {
   int _selected = 0;
+
+  void _select(int index) {
+    setState(() => _selected = index);
+    widget.onSelect?.call(index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1831,7 +1977,7 @@ class _BottomNavigationState extends State<_BottomNavigation> {
               icon: Icons.calendar_today_outlined,
               label: 'Today',
               selected: _selected == 0,
-              onTap: () => setState(() => _selected = 0),
+              onTap: () => _select(0),
             ),
           ),
           Expanded(
@@ -1839,7 +1985,7 @@ class _BottomNavigationState extends State<_BottomNavigation> {
               icon: Icons.show_chart_rounded,
               label: 'Patterns',
               selected: _selected == 1,
-              onTap: () => setState(() => _selected = 1),
+              onTap: () => _select(1),
             ),
           ),
           Expanded(
@@ -1847,7 +1993,7 @@ class _BottomNavigationState extends State<_BottomNavigation> {
               icon: Icons.person_outline_rounded,
               label: 'Profile',
               selected: _selected == 2,
-              onTap: () => setState(() => _selected = 2),
+              onTap: () => _select(2),
             ),
           ),
         ],
@@ -1920,11 +2066,13 @@ class _GlimpseSummaryCard extends StatelessWidget {
     required this.sleep,
     required this.steps,
     required this.weather,
+    required this.calendar,
   });
 
   final String sleep;
   final String steps;
   final String weather;
+  final String calendar;
 
   @override
   Widget build(BuildContext context) {
@@ -1976,8 +2124,8 @@ class _GlimpseSummaryCard extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _GlimpseStat(
-                  label: 'TIME',
-                  value: _clockTime(),
+                  label: 'CALENDAR',
+                  value: calendar,
                   color: const Color(0xffc4956a),
                 ),
               ),
@@ -2385,6 +2533,13 @@ String _titleCase(String value) {
   if (value.isEmpty) return value;
   final normalized = value == 'rain' ? 'rainy' : value;
   return '${normalized[0].toUpperCase()}${normalized.substring(1)}';
+}
+
+/// 0-2 events: Free · 3-5: Moderate · 6+: Busy.
+String _calendarLoadLabel(int eventCount) {
+  if (eventCount < 3) return 'Free';
+  if (eventCount <= 5) return 'Moderate';
+  return 'Busy';
 }
 
 String _dateLabel() {

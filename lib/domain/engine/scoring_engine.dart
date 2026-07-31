@@ -3,6 +3,11 @@ import '../../data/models/daily_context.dart';
 import '../../data/models/interpreted_signal.dart';
 import '../../data/models/scene_composition.dart';
 
+/// Classification level for the Recovery/Activation/Load scene-selection
+/// inputs. Declared low-to-high so `.index` comparisons double as severity
+/// comparisons (see `ScoringEngine._loadLevel`).
+enum _Level { low, medium, high }
+
 /// Ranks clues by signal match, then composes a balanced scene:
 /// 4 signal-informed + 3 possible explanations + 3 helpful + up to 8
 /// distractors — matching the requirements guide's recommended composition.
@@ -81,15 +86,86 @@ class ScoringEngine {
     );
   }
 
+  // Recovery (sleep) thresholds — mirrors signal_engine.dart's
+  // short-sleep/long-sleep cutoffs so the two engines never disagree about
+  // what counts as "low" or "high" sleep.
+  static const double _lowSleepHours = 6.5;
+  static const double _highSleepHours = 8.0;
+
+  // Activation (movement) thresholds — mirrors signal_engine.dart's
+  // low-activity/high-activity cutoffs.
+  static const int _lowSteps = 3000;
+  static const int _highSteps = 8000;
+
+  // Load (screen time) thresholds. screenTimeHours isn't collected from real
+  // devices yet (PassiveDataService has no screen-time source — only demo
+  // profiles/the dev simulator set it), so it only contributes when present;
+  // otherwise Load falls back to the calendar level alone.
+  static const double _lowScreenTimeHours = 2.0;
+  static const double _highScreenTimeHours = 5.0;
+
+  /// Maps a day to one of the 3 prebuilt scenes using Recovery (sleep),
+  /// Activation (movement), and Load (calendar + screen time) — each
+  /// classified Low/Medium/High. Deliberately describes the *shape* of the
+  /// day, not the user's emotion, and never factors in weather: the full
+  /// 3×3×3 mapping is complete/deterministic on its own, so there's never a
+  /// tie left for weather to break.
   SceneKind _selectScene(DailyContext context) {
-    if (context.weather == 'rain' || context.weather == 'snow') {
-      return SceneKind.rainyReadingNook;
+    final recovery = _recoveryLevel(context);
+    final activation = _activationLevel(context);
+    final load = _loadLevel(context);
+
+    if (load == _Level.high) return SceneKind.morningRoom; // Full and Active
+    if (recovery == _Level.low && activation != _Level.high) {
+      return SceneKind.rainyReadingNook; // Rest and Reset
     }
-    if (context.weather == 'sunny' ||
-        (context.steps != null && context.steps! >= 8000)) {
-      return SceneKind.morningRoom;
+    if (activation == _Level.high && load == _Level.medium) {
+      return SceneKind.morningRoom; // Full and Active
     }
-    return SceneKind.eveningBedroom;
+    return SceneKind.eveningBedroom; // Open and Steady — balanced/default
+  }
+
+  _Level _recoveryLevel(DailyContext context) {
+    final hours = context.sleepHours;
+    if (hours == null) return _Level.medium;
+    if (hours < _lowSleepHours) return _Level.low;
+    if (hours >= _highSleepHours) return _Level.high;
+    return _Level.medium;
+  }
+
+  _Level _activationLevel(DailyContext context) {
+    final steps = context.steps;
+    if (steps == null) return _Level.medium;
+    if (steps < _lowSteps) return _Level.low;
+    if (steps > _highSteps) return _Level.high;
+    return _Level.medium;
+  }
+
+  _Level _loadLevel(DailyContext context) {
+    final calendar = _calendarLevel(context);
+    final screenTime = _screenTimeLevel(context.screenTimeHours);
+    if (screenTime == null) return calendar;
+    // The more demanding of the two — a packed calendar or heavy screen
+    // time should each be enough to flag a high-load day on their own.
+    return calendar.index >= screenTime.index ? calendar : screenTime;
+  }
+
+  _Level _calendarLevel(DailyContext context) {
+    switch (context.calendarLoad) {
+      case 'high':
+        return _Level.high;
+      case 'low':
+        return _Level.low;
+      default:
+        return _Level.medium; // 'moderate' or anything unrecognized
+    }
+  }
+
+  _Level? _screenTimeLevel(double? hours) {
+    if (hours == null) return null;
+    if (hours < _lowScreenTimeHours) return _Level.low;
+    if (hours > _highScreenTimeHours) return _Level.high;
+    return _Level.medium;
   }
 
   static const Map<SceneKind, Map<String, (double, double)>> _positions = {

@@ -55,11 +55,14 @@ abstract class SeenRepository {
 
   /// Backend AI call producing a warm narrative reflection from free-text
   /// moments; falls back to a deterministic joined-paragraph reflection if
-  /// the backend is unavailable or the call fails.
+  /// the backend is unavailable or the call fails. [additionalInput] is an
+  /// optional whole-day free-text note (no UI captures this yet — the
+  /// param exists so the contract is ready whenever one is added).
   Future<Reflection> generateReflection({
     required DailyContext context,
     required List<InterpretedSignal> interpretedSignals,
     required List<Map<String, String>> moments,
+    String? additionalInput,
   });
 
   /// Backend AI call regenerating a reflection per the user's own steering
